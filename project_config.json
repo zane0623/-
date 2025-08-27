@@ -1,0 +1,449 @@
+{
+  "project": {
+    "name": "EduBoost RWA",
+    "version": "1.0.0",
+    "description": "全栈式学业支持平台",
+    "author": "EduBoost Team",
+    "license": "MIT"
+  },
+  "architecture": {
+    "frontend": {
+      "framework": "Next.js 14",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS",
+      "stateManagement": "Zustand",
+      "dataFetching": "React Query",
+      "uiComponents": "Radix UI + Shadcn/ui"
+    },
+    "backend": {
+      "framework": "Express.js",
+      "language": "TypeScript",
+      "database": "PostgreSQL",
+      "cache": "Redis",
+      "orm": "Prisma",
+      "authentication": "JWT + bcrypt"
+    },
+    "blockchain": {
+      "platform": "Solana",
+      "framework": "Anchor",
+      "nftStandard": "Metaplex",
+      "rpcProvider": "Helius"
+    }
+  },
+  "modules": {
+    "authentication": {
+      "enabled": true,
+      "methods": [
+        "email_password",
+        "web3_wallet",
+        "oauth_google",
+        "oauth_apple"
+      ],
+      "features": [
+        "mfa",
+        "role_based_access",
+        "session_management"
+      ]
+    },
+    "learning": {
+      "enabled": true,
+      "features": [
+        "personalized_paths",
+        "smart_recommendations",
+        "progress_tracking",
+        "knowledge_graph",
+        "adaptive_assessment"
+      ],
+      "subjects": [
+        "mathematics",
+        "physics",
+        "chemistry",
+        "biology",
+        "english",
+        "history",
+        "geography"
+      ]
+    },
+    "applications": {
+      "enabled": true,
+      "features": [
+        "document_management",
+        "progress_tracking",
+        "recommendation_letters",
+        "crypto_payments",
+        "status_notifications"
+      ],
+      "documentTypes": [
+        "transcript",
+        "essay",
+        "recommendation",
+        "resume",
+        "test_scores"
+      ]
+    },
+    "mental_health": {
+      "enabled": true,
+      "features": [
+        "assessment_questionnaires",
+        "mood_tracking",
+        "privacy_protection",
+        "counselor_matching",
+        "crisis_detection"
+      ],
+      "assessments": [
+        "depression",
+        "anxiety",
+        "stress",
+        "self_esteem",
+        "academic_pressure"
+      ]
+    },
+    "token_economy": {
+      "enabled": true,
+      "features": [
+        "achievement_nfts",
+        "token_rewards",
+        "staking",
+        "governance",
+        "liquidity_mining"
+      ],
+      "tokenInfo": {
+        "name": "EduBoost Token",
+        "symbol": "EDU",
+        "decimals": 9,
+        "totalSupply": "1000000000"
+      }
+    }
+  },
+  "database": {
+    "tables": {
+      "users": {
+        "fields": [
+          "id",
+          "email",
+          "password_hash",
+          "wallet_address",
+          "role",
+          "is_verified",
+          "mfa_enabled",
+          "created_at",
+          "updated_at"
+        ],
+        "indexes": ["email", "wallet_address"]
+      },
+      "user_profiles": {
+        "fields": [
+          "id",
+          "user_id",
+          "first_name",
+          "last_name",
+          "date_of_birth",
+          "grade_level",
+          "interests",
+          "created_at"
+        ],
+        "indexes": ["user_id"]
+      },
+      "courses": {
+        "fields": [
+          "id",
+          "name",
+          "subject",
+          "difficulty_level",
+          "estimated_hours",
+          "created_at"
+        ],
+        "indexes": ["subject", "difficulty_level"]
+      },
+      "lessons": {
+        "fields": [
+          "id",
+          "course_id",
+          "title",
+          "content",
+          "order_index",
+          "knowledge_points",
+          "created_at"
+        ],
+        "indexes": ["course_id", "order_index"]
+      },
+      "user_progress": {
+        "fields": [
+          "id",
+          "user_id",
+          "lesson_id",
+          "completion_rate",
+          "score",
+          "time_spent",
+          "completed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "indexes": ["user_id", "lesson_id"]
+      },
+      "universities": {
+        "fields": [
+          "id",
+          "name",
+          "country",
+          "application_fee",
+          "deadline",
+          "requirements",
+          "created_at"
+        ],
+        "indexes": ["country"]
+      },
+      "applications": {
+        "fields": [
+          "id",
+          "user_id",
+          "university_id",
+          "status",
+          "submitted_at",
+          "created_at"
+        ],
+        "indexes": ["user_id", "status"]
+      },
+      "application_documents": {
+        "fields": [
+          "id",
+          "application_id",
+          "document_type",
+          "file_url",
+          "uploaded_at"
+        ],
+        "indexes": ["application_id", "document_type"]
+      },
+      "mental_health_assessments": {
+        "fields": [
+          "id",
+          "user_id",
+          "assessment_type",
+          "encrypted_data",
+          "score",
+          "risk_level",
+          "conducted_at"
+        ],
+        "indexes": ["user_id", "assessment_type"]
+      },
+      "mood_tracking": {
+        "fields": [
+          "id",
+          "user_id",
+          "mood_score",
+          "encrypted_notes",
+          "tracked_at"
+        ],
+        "indexes": ["user_id", "tracked_at"]
+      },
+      "nft_achievements": {
+        "fields": [
+          "id",
+          "user_id",
+          "mint_address",
+          "achievement_type",
+          "metadata_uri",
+          "minted_at"
+        ],
+        "indexes": ["user_id", "achievement_type"]
+      },
+      "token_transactions": {
+        "fields": [
+          "id",
+          "user_id",
+          "transaction_hash",
+          "amount",
+          "transaction_type",
+          "status",
+          "created_at"
+        ],
+        "indexes": ["user_id", "transaction_type"]
+      }
+    }
+  },
+  "api": {
+    "baseUrl": "http://localhost:4000",
+    "version": "v1",
+    "endpoints": {
+      "auth": {
+        "register": "POST /api/auth/register",
+        "login": "POST /api/auth/login",
+        "wallet-connect": "POST /api/auth/wallet-connect",
+        "refresh-token": "POST /api/auth/refresh-token",
+        "logout": "POST /api/auth/logout"
+      },
+      "users": {
+        "profile": "GET /api/users/profile",
+        "update-profile": "PUT /api/users/profile",
+        "achievements": "GET /api/users/achievements",
+        "progress": "GET /api/users/progress"
+      },
+      "learning": {
+        "courses": "GET /api/courses",
+        "course": "GET /api/courses/:id",
+        "lessons": "GET /api/courses/:id/lessons",
+        "progress": "POST /api/lessons/:id/progress",
+        "path": "GET /api/learning/path"
+      },
+      "applications": {
+        "universities": "GET /api/universities",
+        "create": "POST /api/applications",
+        "get": "GET /api/applications/:id",
+        "update": "PUT /api/applications/:id",
+        "documents": "POST /api/applications/:id/documents",
+        "submit": "POST /api/applications/:id/submit"
+      },
+      "mental-health": {
+        "assessments": "POST /api/mental-health/assessments",
+        "mood-tracking": "GET /api/mental-health/mood-tracking",
+        "mood-track": "POST /api/mental-health/mood-tracking",
+        "recommendations": "GET /api/mental-health/recommendations"
+      },
+      "blockchain": {
+        "mint-achievement": "POST /api/blockchain/mint-achievement",
+        "stake-tokens": "POST /api/blockchain/stake-tokens",
+        "balance": "GET /api/blockchain/balance",
+        "transactions": "GET /api/blockchain/transactions"
+      }
+    }
+  },
+  "security": {
+    "authentication": {
+      "jwtSecret": "your-super-secret-jwt-key",
+      "jwtRefreshSecret": "your-super-secret-refresh-key",
+      "jwtExpiresIn": "15m",
+      "jwtRefreshExpiresIn": "7d",
+      "bcryptRounds": 12
+    },
+    "encryption": {
+      "algorithm": "aes-256-gcm",
+      "keyLength": 32,
+      "ivLength": 16
+    },
+    "cors": {
+      "origin": ["http://localhost:3000", "https://eduboost.com"],
+      "credentials": true
+    },
+          "rateLimit": {
+        "windowMs": 900000,
+        "max": 100
+      }
+  },
+  "blockchain": {
+    "solana": {
+      "network": "devnet",
+      "rpcUrl": "https://api.devnet.solana.com",
+      "programId": "your-program-id",
+      "globalStateAddress": "your-global-state-address"
+    },
+    "nft": {
+      "collectionName": "EduBoost Achievements",
+      "collectionSymbol": "EDUACH",
+      "baseUri": "https://arweave.net/your-metadata-uri/"
+    },
+    "token": {
+      "name": "EduBoost Token",
+      "symbol": "EDU",
+      "decimals": 9,
+      "totalSupply": "1000000000",
+      "mintAuthority": "your-mint-authority"
+    }
+  },
+  "deployment": {
+    "environments": {
+      "development": {
+        "frontend": "http://localhost:3000",
+        "backend": "http://localhost:4000",
+        "database": "postgresql://user:password@localhost:5432/eduboost_dev",
+        "redis": "redis://localhost:6379"
+      },
+      "staging": {
+        "frontend": "https://staging.eduboost.com",
+        "backend": "https://api-staging.eduboost.com",
+        "database": "postgresql://user:password@staging-db:5432/eduboost_staging",
+        "redis": "redis://staging-redis:6379"
+      },
+      "production": {
+        "frontend": "https://eduboost.com",
+        "backend": "https://api.eduboost.com",
+        "database": "postgresql://user:password@prod-db:5432/eduboost_prod",
+        "redis": "redis://prod-redis:6379"
+      }
+    },
+    "docker": {
+      "frontend": {
+        "port": 3000,
+        "buildContext": "./frontend",
+        "dockerfile": "Dockerfile"
+      },
+      "backend": {
+        "port": 4000,
+        "buildContext": "./backend",
+        "dockerfile": "Dockerfile"
+      },
+      "postgres": {
+        "port": 5432,
+        "image": "postgres:15",
+        "environment": {
+          "POSTGRES_DB": "eduboost",
+          "POSTGRES_USER": "user",
+          "POSTGRES_PASSWORD": "password"
+        }
+      },
+      "redis": {
+        "port": 6379,
+        "image": "redis:7-alpine"
+      }
+    }
+  },
+  "monitoring": {
+    "logging": {
+      "level": "info",
+      "format": "json",
+      "output": "file"
+    },
+    "metrics": {
+      "enabled": true,
+      "port": 9090,
+      "endpoint": "/metrics"
+    },
+    "healthCheck": {
+      "enabled": true,
+      "endpoint": "/health",
+      "interval": 30
+    }
+  },
+  "testing": {
+    "frontend": {
+      "framework": "Jest",
+      "coverage": 80,
+      "e2e": "Playwright"
+    },
+    "backend": {
+      "framework": "Jest",
+      "coverage": 80,
+      "integration": "Supertest"
+    },
+    "blockchain": {
+      "framework": "Anchor",
+      "coverage": 70
+    }
+  },
+  "development": {
+    "scripts": {
+      "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+      "dev:frontend": "cd frontend && npm run dev",
+      "dev:backend": "cd backend && npm run dev",
+      "build": "npm run build:frontend && npm run build:backend",
+      "test": "npm run test:frontend && npm run test:backend",
+      "db:migrate": "cd backend && npx prisma migrate dev",
+      "db:studio": "cd backend && npx prisma studio"
+    },
+    "tools": {
+      "linting": "ESLint",
+      "formatting": "Prettier",
+      "typeChecking": "TypeScript",
+      "gitHooks": "Husky"
+    }
+  }
+} 
