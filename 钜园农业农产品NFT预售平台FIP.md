@@ -269,6 +269,8 @@ contract EscrowManager {
 6. **物流服务 (Logistics Service)** - 端口: 3006
 7. **合规服务 (Compliance Service)** - 端口: 3007
 8. **通知服务 (Notification Service)** - 端口: 3008
+9. **国际化服务 (i18n Service)** - 端口: 3009 ⭐ NEW
+10. **多币种服务 (Multi-Currency Service)** - 端口: 3010 ⭐ NEW
 
 #### 技术栈
 - **框架**: Node.js 18 + Express.js 4.18
@@ -712,6 +714,508 @@ Response:
 - ✓ 支付成功率>99%
 - ✓ 通过PCI DSS安全检查
 - ✓ 退款处理正常
+
+---
+
+### 2.5 国际化服务实施 ⭐ NEW
+
+#### 功能范围
+- 多语言内容管理
+- 翻译内容存储和检索
+- 语言自动检测
+- 本地化内容适配
+
+#### 数据库设计
+
+```sql
+-- 翻译内容表
+CREATE TABLE translations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key VARCHAR(255) NOT NULL,
+    language_code VARCHAR(10) NOT NULL,
+    content TEXT NOT NULL,
+    category VARCHAR(50),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(key, language_code),
+    INDEX idx_key (key),
+    INDEX idx_language (language_code)
+);
+
+-- 支持语言表
+CREATE TABLE supported_languages (
+    code VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    native_name VARCHAR(100) NOT NULL,
+    direction VARCHAR(3) DEFAULT 'ltr',
+    is_active BOOLEAN DEFAULT true,
+    priority INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 用户语言偏好表
+CREATE TABLE user_language_preferences (
+    user_id UUID PRIMARY KEY REFERENCES users(id),
+    language_code VARCHAR(10) REFERENCES supported_languages(code),
+    auto_detect BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### API端点设计
+
+**获取翻译内容**
+```typescript
+GET /api/v1/i18n/translations
+Query Parameters:
+- language: zh-CN | en-US | th-TH | ms-MY | vi-VN | ja-JP | ko-KR
+- keys: string[] (逗号分隔)
+- category: string (optional)
+
+Response:
+{
+  "success": true,
+  "data": {
+    "home.title": "钜园农业NFT预售平台",
+    "home.subtitle": "区块链赋能优质农产品",
+    "product.buy": "立即购买"
+  }
+}
+```
+
+**自动语言检测**
+```typescript
+POST /api/v1/i18n/detect
+Request:
+{
+  "ip": "203.xx.xx.xx",
+  "acceptLanguage": "zh-CN,zh;q=0.9,en;q=0.8"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "detectedLanguage": "zh-CN",
+    "detectedRegion": "SG",
+    "suggestions": ["zh-CN", "en-US"]
+  }
+}
+```
+
+#### 实施步骤
+
+1. **基础架构搭建**（第24周）
+   - 创建i18n微服务
+   - 设计数据库表结构
+   - 实现翻译内容CRUD API
+   - 集成i18next框架
+
+2. **多语言内容录入**（第25周）
+   - 准备8种语言的翻译内容
+   - 建立翻译工作流程
+   - 集成翻译服务API（Google Translate作为辅助）
+   - 实现内容审核流程
+
+3. **语言检测集成**（第26周）
+   - 基于IP的地理位置检测
+   - Accept-Language头部解析
+   - 用户偏好存储和检索
+   - 语言切换API
+
+4. **本地化内容管理**（第27周）
+   - 产品名称和描述本地化
+   - 法律条款本地化
+   - 邮件模板本地化
+   - 通知消息本地化
+
+**交付物**
+- [ ] 国际化服务源代码
+- [ ] 8种语言翻译内容
+- [ ] 翻译管理后台
+- [ ] API文档
+- [ ] 语言检测测试报告
+
+**验收标准**
+- ✓ 支持8种语言
+- ✓ API响应时间<100ms
+- ✓ 翻译覆盖率100%（所有关键页面）
+- ✓ 自动检测准确率>95%
+
+---
+
+### 2.6 多币种服务实施 ⭐ NEW
+
+#### 功能范围
+- 多货币汇率管理
+- 实时汇率更新
+- 货币转换计算
+- 历史汇率记录
+
+#### 数据库设计
+
+```sql
+-- 支持货币表
+CREATE TABLE supported_currencies (
+    code VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    decimal_places INT DEFAULT 2,
+    is_fiat BOOLEAN DEFAULT true,
+    is_active BOOLEAN DEFAULT true,
+    priority INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 汇率表
+CREATE TABLE exchange_rates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    from_currency VARCHAR(10) REFERENCES supported_currencies(code),
+    to_currency VARCHAR(10) REFERENCES supported_currencies(code),
+    rate DECIMAL(20, 8) NOT NULL,
+    source VARCHAR(50),
+    timestamp TIMESTAMP DEFAULT NOW(),
+    INDEX idx_currencies (from_currency, to_currency),
+    INDEX idx_timestamp (timestamp)
+);
+
+-- 历史汇率表（用于审计）
+CREATE TABLE historical_exchange_rates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    from_currency VARCHAR(10),
+    to_currency VARCHAR(10),
+    rate DECIMAL(20, 8) NOT NULL,
+    date DATE NOT NULL,
+    source VARCHAR(50),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(from_currency, to_currency, date)
+);
+
+-- 用户货币偏好表
+CREATE TABLE user_currency_preferences (
+    user_id UUID PRIMARY KEY REFERENCES users(id),
+    currency_code VARCHAR(10) REFERENCES supported_currencies(code),
+    auto_detect BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### API端点设计
+
+**获取汇率**
+```typescript
+GET /api/v1/currency/rates
+Query Parameters:
+- from: USD | SGD | CNY | HKD | THB | MYR | VND | JPY | KRW | EUR
+- to: USD | SGD | CNY | HKD | THB | MYR | VND | JPY | KRW | EUR
+- date: YYYY-MM-DD (optional, 默认当前)
+
+Response:
+{
+  "success": true,
+  "data": {
+    "from": "USD",
+    "to": "SGD",
+    "rate": 1.35,
+    "timestamp": "2025-09-30T10:00:00Z",
+    "source": "aggregated"
+  }
+}
+```
+
+**货币转换**
+```typescript
+POST /api/v1/currency/convert
+Request:
+{
+  "amount": 100.00,
+  "from": "USD",
+  "to": "CNY"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "originalAmount": 100.00,
+    "originalCurrency": "USD",
+    "convertedAmount": 720.50,
+    "convertedCurrency": "CNY",
+    "rate": 7.205,
+    "timestamp": "2025-09-30T10:00:00Z"
+  }
+}
+```
+
+**批量汇率获取**
+```typescript
+POST /api/v1/currency/rates/batch
+Request:
+{
+  "base": "USD",
+  "targets": ["SGD", "CNY", "HKD", "THB", "EUR"]
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "base": "USD",
+    "rates": {
+      "SGD": 1.35,
+      "CNY": 7.205,
+      "HKD": 7.82,
+      "THB": 35.20,
+      "EUR": 0.92
+    },
+    "timestamp": "2025-09-30T10:00:00Z"
+  }
+}
+```
+
+#### 实施步骤
+
+1. **汇率数据源集成**（第24周）
+   - 集成多家汇率API提供商（CoinGecko、CurrencyLayer、ExchangeRate-API）
+   - 实现汇率聚合算法（取多源平均值）
+   - 建立汇率更新定时任务（每5分钟）
+   - 实现汇率缓存机制
+
+2. **货币转换引擎**（第25周）
+   - 实现多币种转换逻辑
+   - 处理小数位数规则（JPY/KRW无小数）
+   - 实现四舍五入规则
+   - 加密货币汇率集成（8位小数）
+
+3. **历史汇率管理**（第26周）
+   - 每日汇率快照存储
+   - 历史汇率查询API
+   - 汇率趋势分析
+   - 审计报告生成
+
+4. **货币自动检测**（第27周）
+   - 基于IP地理位置的货币检测
+   - 基于用户账户地区的货币选择
+   - 用户货币偏好存储
+   - 货币切换API
+
+**交付物**
+- [ ] 多币种服务源代码
+- [ ] 汇率数据源集成
+- [ ] 历史汇率存储系统
+- [ ] API文档
+- [ ] 汇率准确性测试报告
+
+**验收标准**
+- ✓ 支持10种法币 + 4种加密货币
+- ✓ 汇率更新频率<5分钟
+- ✓ 汇率准确性>99.9%（与市场汇率对比）
+- ✓ API响应时间<50ms（使用缓存）
+- ✓ 历史汇率完整保存
+
+---
+
+### 2.7 合规服务扩展 ⭐ ENHANCED
+
+#### 新增功能范围（基于PRD合规框架）
+
+**多司法管辖区合规管理：**
+- 新加坡MAS合规监控
+- 中国数字藏品合规
+- 香港SFC合规
+- 东南亚各国合规（泰国、马来西亚、越南）
+- 日韩合规准备（Phase 3）
+- 欧美合规准备（Phase 3）
+
+#### 扩展数据库设计
+
+```sql
+-- 司法管辖区配置表
+CREATE TABLE jurisdictions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    region VARCHAR(50),
+    regulatory_body VARCHAR(200),
+    kyc_tier_required INT DEFAULT 1,
+    transaction_limit DECIMAL(20, 2),
+    requires_license BOOLEAN DEFAULT false,
+    license_type VARCHAR(100),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 合规规则表
+CREATE TABLE compliance_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    jurisdiction_id UUID REFERENCES jurisdictions(id),
+    rule_type VARCHAR(50) NOT NULL,
+    rule_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    threshold_amount DECIMAL(20, 2),
+    threshold_currency VARCHAR(10),
+    action_required VARCHAR(50),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 牌照申请跟踪表
+CREATE TABLE license_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    jurisdiction_id UUID REFERENCES jurisdictions(id),
+    license_type VARCHAR(100) NOT NULL,
+    application_date DATE NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    approval_date DATE,
+    expiry_date DATE,
+    cost_usd DECIMAL(10, 2),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 合规报告表
+CREATE TABLE compliance_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    jurisdiction_id UUID REFERENCES jurisdictions(id),
+    report_type VARCHAR(50) NOT NULL,
+    report_period_start DATE NOT NULL,
+    report_period_end DATE NOT NULL,
+    generated_at TIMESTAMP DEFAULT NOW(),
+    submitted_at TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'draft',
+    file_url TEXT,
+    created_by UUID REFERENCES users(id)
+);
+```
+
+#### 新增API端点
+
+**获取司法管辖区要求**
+```typescript
+GET /api/v1/compliance/jurisdiction/{code}
+Example: GET /api/v1/compliance/jurisdiction/SG
+
+Response:
+{
+  "success": true,
+  "data": {
+    "code": "SG",
+    "name": "Singapore",
+    "regulatoryBody": "MAS",
+    "kycTierRequired": 2,
+    "transactionLimit": 10000,
+    "requiresLicense": true,
+    "licenseType": "PSA Standard Payment Institution",
+    "complianceRequirements": [
+      "KYC/AML verification",
+      "Transaction monitoring",
+      "PDPA compliance",
+      "GST registration if revenue > SGD 1M"
+    ]
+  }
+}
+```
+
+**合规检查**
+```typescript
+POST /api/v1/compliance/check
+Request:
+{
+  "userId": "uuid",
+  "transactionAmount": 15000,
+  "currency": "USD",
+  "jurisdiction": "SG",
+  "transactionType": "nft_purchase"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "compliant": false,
+    "violations": [
+      {
+        "rule": "Enhanced KYC Required",
+        "description": "Transactions over SGD 10,000 require enhanced KYC",
+        "action": "BLOCK_TRANSACTION",
+        "remediation": "User must complete enhanced KYC verification"
+      }
+    ],
+    "requiredActions": [
+      "COMPLETE_ENHANCED_KYC",
+      "PROVIDE_SOURCE_OF_FUNDS"
+    ]
+  }
+}
+```
+
+**生成监管报告**
+```typescript
+POST /api/v1/compliance/reports/generate
+Request:
+{
+  "jurisdiction": "SG",
+  "reportType": "monthly_aml",
+  "periodStart": "2025-09-01",
+  "periodEnd": "2025-09-30"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "reportId": "uuid",
+    "jurisdiction": "SG",
+    "reportType": "monthly_aml",
+    "status": "generating",
+    "estimatedCompletion": "2025-10-01T10:00:00Z"
+  }
+}
+```
+
+#### 实施步骤
+
+1. **司法管辖区配置**（第28周）
+   - 录入9个司法管辖区的合规要求
+   - 配置各地区的KYC层级
+   - 设置交易限额规则
+   - 建立合规规则引擎
+
+2. **多国KYC集成**（第29周）
+   - 新加坡KYC流程（Jumio集成）
+   - 中国实名认证（人脸识别）
+   - 香港KYC流程
+   - 东南亚KYC适配
+
+3. **牌照申请管理**（第30周）
+   - 新加坡PSA牌照申请跟踪
+   - 中国ICP备案管理
+   - 香港公司注册追踪
+   - 牌照成本预算管理
+
+4. **监管报告自动化**（第31周）
+   - AML月度报告生成（新加坡）
+   - 交易数据报告（中国）
+   - 可疑交易报告（STR）
+   - 大额交易报告
+
+**交付物**
+- [ ] 扩展合规服务源代码
+- [ ] 9个司法管辖区配置
+- [ ] KYC多国适配
+- [ ] 监管报告模板
+- [ ] 牌照申请管理系统
+- [ ] 合规检查引擎
+
+**验收标准**
+- ✓ 支持9个司法管辖区合规检查
+- ✓ KYC流程通过率>95%
+- ✓ 合规检查响应时间<100ms
+- ✓ 自动报告生成准确率100%
+- ✓ 零合规违规事件
 
 ---
 
@@ -1462,31 +1966,175 @@ app.use(jwtMiddleware);
 | 消息队列 | Bull | 4.x |
 | 容器化 | Docker | 24.x |
 | 编排 | Kubernetes | 1.28 |
+| **国际化** ⭐ | **i18next + react-i18next** | **23.x** |
+| **汇率数据** ⭐ | **CoinGecko + CurrencyLayer** | **-** |
+| **KYC/AML** ⭐ | **Jumio + Onfido** | **-** |
+| **区块链分析** ⭐ | **Chainalysis + Elliptic** | **-** |
 
-### B. 关键时间节点
+### B. 关键时间节点（更新）⭐
 
 | 阶段 | 时间 | 里程碑 |
 |------|------|--------|
 | Phase 1 | 第1-15周 | 智能合约+用户服务完成 |
 | Phase 2 | 第16-23周 | NFT服务+支付服务完成 |
-| Phase 3 | 第24-29周 | 微信小程序完成 |
-| Phase 4 | 第30-34周 | 管理后台完成 |
-| Phase 5 | 第35-40周 | 测试+部署+上线 |
+| Phase 3 | 第24-27周 | **国际化服务+多币种服务+微信小程序完成** ⭐ |
+| Phase 4 | 第28-31周 | **多国合规服务+管理后台完成** ⭐ |
+| Phase 5 | 第32-34周 | **牌照申请+监管报告系统完成** ⭐ |
+| Phase 6 | 第35-40周 | 测试+部署+上线 |
 
-### C. 团队配置建议
+**更新说明：** 
+- Phase 3 新增国际化和多币种服务实施
+- Phase 4 新增多国合规服务扩展
+- Phase 5 新增牌照申请管理和监管报告自动化
+- 整体项目周期保持40周不变
+
+### C. 团队配置建议（扩展）⭐
 
 | 角色 | 人数 | 职责 |
 |------|------|------|
 | 区块链工程师 | 2 | 智能合约开发和审计 |
-| 后端工程师 | 4 | 微服务开发 |
+| 后端工程师 | **5** ⭐ | 微服务开发（新增国际化+多币种服务） |
 | 前端工程师 | 3 | Web和小程序开发 |
 | 测试工程师 | 2 | 测试和质量保证 |
 | DevOps工程师 | 1 | 部署和运维 |
 | 安全工程师 | 1 | 安全审计和防护 |
 | 产品经理 | 1 | 需求和进度管理 |
+| **合规专员** ⭐ | **3** | **多国合规管理（新加坡、中国、香港各1名）** |
+| **翻译专员** ⭐ | **2** | **多语言内容翻译和审核** |
+| **法务顾问** ⭐ | **外聘** | **各市场法律咨询（9个司法管辖区）** |
+
+**新增人员说明：**
+- **后端工程师增加1名**：专职负责国际化和多币种服务开发
+- **合规专员3名**：分别负责新加坡、中国、香港市场合规
+- **翻译专员2名**：负责8种语言的内容翻译和本地化
+- **外聘法务顾问**：各市场1家律所提供法律咨询服务
+
+---
+
+### D. 国际化实施清单 ⭐ NEW
+
+#### D.1 支持语言列表
+
+| 语言 | 代码 | 优先级 | 完成状态 |
+|------|------|--------|---------|
+| 简体中文 | zh-CN | P0 | [ ] |
+| 繁体中文 | zh-TW | P0 | [ ] |
+| 英语 | en-US | P0 | [ ] |
+| 泰语 | th-TH | P1 | [ ] |
+| 马来语 | ms-MY | P1 | [ ] |
+| 越南语 | vi-VN | P1 | [ ] |
+| 日语 | ja-JP | P2 | [ ] |
+| 韩语 | ko-KR | P2 | [ ] |
+
+#### D.2 支持货币列表
+
+| 货币 | 代码 | 类型 | 小数位 | 优先级 | 完成状态 |
+|------|------|------|--------|--------|---------|
+| 美元 | USD | 法币 | 2 | P0 | [ ] |
+| 新加坡元 | SGD | 法币 | 2 | P0 | [ ] |
+| 人民币 | CNY | 法币 | 2 | P0 | [ ] |
+| 港币 | HKD | 法币 | 2 | P0 | [ ] |
+| 泰铢 | THB | 法币 | 2 | P1 | [ ] |
+| 林吉特 | MYR | 法币 | 2 | P1 | [ ] |
+| 越南盾 | VND | 法币 | 0 | P1 | [ ] |
+| 日元 | JPY | 法币 | 0 | P2 | [ ] |
+| 韩元 | KRW | 法币 | 0 | P2 | [ ] |
+| 欧元 | EUR | 法币 | 2 | P2 | [ ] |
+| 以太坊 | ETH | 加密 | 8 | P0 | [ ] |
+| USDT | USDT | 加密 | 8 | P0 | [ ] |
+| USDC | USDC | 加密 | 8 | P0 | [ ] |
+| 比特币 | BTC | 加密 | 8 | P1 | [ ] |
+
+#### D.3 支付方式本地化
+
+| 地区 | 支付方式 | 优先级 | 集成状态 |
+|------|---------|--------|---------|
+| 中国 | 微信支付 | P0 | [ ] |
+| 中国 | 支付宝 | P0 | [ ] |
+| 中国 | 银联卡 | P1 | [ ] |
+| 新加坡 | PayNow | P0 | [ ] |
+| 新加坡 | GrabPay | P1 | [ ] |
+| 香港 | PayMe | P1 | [ ] |
+| 香港 | 八达通 | P1 | [ ] |
+| 泰国 | PromptPay | P1 | [ ] |
+| 马来西亚 | Touch 'n Go | P1 | [ ] |
+| 越南 | MoMo | P1 | [ ] |
+| 国际 | Stripe | P0 | [ ] |
+| 国际 | PayPal | P1 | [ ] |
+
+#### D.4 物流合作伙伴
+
+| 地区 | 物流商 | 服务类型 | 集成状态 |
+|------|--------|---------|---------|
+| 中国 | 顺丰速运 | 冷链配送 | [ ] |
+| 中国 | 京东物流 | 标准配送 | [ ] |
+| 新加坡 | Ninja Van | 标准配送 | [ ] |
+| 新加坡 | DHL | 冷链配送 | [ ] |
+| 泰国 | Kerry Express | 标准配送 | [ ] |
+| 马来西亚 | Poslaju | 标准配送 | [ ] |
+| 越南 | Giao Hàng Nhanh | 标准配送 | [ ] |
+| 国际 | FedEx | 国际冷链 | [ ] |
+
+---
+
+### E. 合规实施清单 ⭐ NEW
+
+#### E.1 司法管辖区合规状态
+
+| 司法管辖区 | 监管机构 | 牌照类型 | 申请状态 | 成本（USD） | 完成状态 |
+|-----------|---------|---------|---------|------------|---------|
+| 新加坡 | MAS | PSA牌照 | 未开始 | $190,000 | [ ] |
+| 中国 | PBOC/CAC | ICP备案 | 未开始 | $60,000 | [ ] |
+| 香港 | SFC | 公司注册 | 未开始 | $120,000 | [ ] |
+| 泰国 | Thai SEC | 数字资产牌照 | 未开始 | $230,000 | [ ] |
+| 马来西亚 | SC Malaysia | 交易所注册 | 未开始 | - | [ ] |
+| 越南 | SBV | 待定 | 未开始 | - | [ ] |
+| 日本 | FSA | 待定 | 未开始 | $250,000 | [ ] |
+| 韩国 | FSC | VASP注册 | 未开始 | - | [ ] |
+| 欧盟 | - | MiCA合规 | 未开始 | - | [ ] |
+
+**合规成本总计：** $850,000（首年）
+
+#### E.2 KYC层级配置
+
+| KYC层级 | 交易限额 | 要求文件 | 适用地区 | 完成状态 |
+|---------|---------|---------|---------|---------|
+| 基础KYC | <$1,000 | 姓名+邮箱 | 全球 | [ ] |
+| 标准KYC | <$10,000 | 身份证+地址 | 全球 | [ ] |
+| 增强KYC | >$10,000 | 资金来源+职业 | 新加坡、香港 | [ ] |
+| 实名认证 | 不限 | 身份证+人脸识别 | 中国 | [ ] |
+
+#### E.3 监管报告自动化
+
+| 报告类型 | 频率 | 提交至 | 自动化状态 |
+|---------|------|--------|-----------|
+| AML月度报告 | 月度 | MAS (新加坡) | [ ] |
+| 大额交易报告 | 实时 | STRO (新加坡) | [ ] |
+| 可疑交易报告 | 实时 | JFIU (香港) | [ ] |
+| 交易数据报告 | 季度 | PBOC (中国) | [ ] |
+
+---
+
+### F. 版本更新历史 ⭐ NEW
+
+| 版本 | 日期 | 更新内容 | 负责人 |
+|------|------|---------|--------|
+| v1.0 | 2025-09 | 初始版本 | 技术团队 |
+| **v1.1** ⭐ | **2025-09** | **新增国际化、多币种、多国合规服务** | **技术团队** |
+
+**v1.1 更新摘要：**
+- ✅ 新增国际化服务实施计划（2.5节）
+- ✅ 新增多币种服务实施计划（2.6节）
+- ✅ 扩展合规服务支持多国合规（2.7节）
+- ✅ 更新技术栈总览
+- ✅ 调整项目时间表和里程碑
+- ✅ 扩展团队配置建议
+- ✅ 新增国际化实施清单（附录D）
+- ✅ 新增合规实施清单（附录E）
 
 ---
 
 **文档状态：** 待审批  
+**当前版本：** v1.1 ⭐  
 **下次更新：** 2025年10月  
-**审批人：** CTO、技术总监、产品总监 
+**审批人：** CTO、技术总监、产品总监、首席合规官 ⭐ 
