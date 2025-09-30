@@ -15,14 +15,15 @@ Create the world's leading agricultural products NFT pre-sale platform that conn
 
 ### Business Objectives
 - Establish Juyuan Agriculture as the global leader in agricultural NFT/RWA tokenization
-- Generate $50M+ in pre-sales within the first year
+- Generate $50M+ in pre-sales within the first year, scaling to $100M+ total transaction volume
 - Build a sustainable ecosystem supporting multiple agricultural product categories
-- Achieve regulatory compliance across Singapore, China, and international markets
+- Achieve regulatory compliance across Singapore, China, Hong Kong, and Southeast Asian markets
 
 ### Target Market
 - **Primary:** High-income consumers interested in premium agricultural products and NFT investments
 - **Secondary:** Agricultural producers seeking innovative sales channels
-- **Geographic:** Global, with initial focus on Singapore, China, and Southeast Asia
+- **Tertiary:** Platform administrators and compliance officers managing multi-jurisdiction operations
+- **Geographic:** Global, with initial focus on Singapore, China, Hong Kong, and Southeast Asia (Thailand, Malaysia, Vietnam)
 
 ---
 
@@ -59,10 +60,10 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 
 ### Primary Persona: Premium Consumer (Alex Chen)
 - **Demographics:** 35-45 years old, high disposable income ($100K+ annually)
-- **Location:** Singapore, Hong Kong, major Chinese cities
-- **Behavior:** Early adopter of technology, values quality and authenticity
-- **Motivations:** Seeking premium products, investment opportunities, supporting sustainable agriculture
-- **Pain Points:** Difficulty verifying product authenticity, limited access to premium agricultural products
+- **Location:** Singapore, Hong Kong, major Chinese cities, Bangkok, Kuala Lumpur
+- **Behavior:** Early adopter of technology, values quality and authenticity, active in Web3/NFT communities
+- **Motivations:** Seeking premium products, investment opportunities, supporting sustainable agriculture, exclusive access to limited editions
+- **Pain Points:** Difficulty verifying product authenticity, limited access to premium agricultural products, lack of investment opportunities in agricultural sector
 
 ### Secondary Persona: Agricultural Producer (Farm Manager Li)
 - **Demographics:** 40-55 years old, manages large-scale agricultural operations
@@ -73,10 +74,10 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 
 ### Tertiary Persona: Platform Administrator (Sarah Wong)
 - **Demographics:** 28-40 years old, technology and operations background
-- **Location:** Singapore headquarters
-- **Behavior:** Data-driven decision making, compliance-focused
-- **Motivations:** Platform growth, regulatory compliance, operational efficiency
-- **Pain Points:** Complex regulatory requirements, multi-jurisdiction compliance
+- **Location:** Singapore headquarters with regional oversight
+- **Behavior:** Data-driven decision making, compliance-focused, risk-averse
+- **Motivations:** Platform growth, regulatory compliance, operational efficiency, user safety
+- **Pain Points:** Complex multi-jurisdiction regulatory requirements, rapidly changing crypto regulations, coordinating compliance across Singapore, China, Hong Kong, and Southeast Asia
 
 ---
 
@@ -315,12 +316,12 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 - As a user, I want a smooth verification process so that I can quickly start using the platform
 
 **Acceptance Criteria:**
-- Multi-tier KYC verification (basic, intermediate, advanced)
-- Document verification with AI-powered validation
-- Biometric verification for high-value transactions
-- AML transaction monitoring and reporting
-- Sanctions list screening
-- Regulatory reporting for Singapore MAS and Chinese authorities
+- Multi-tier KYC verification (basic, intermediate, advanced) tailored to each jurisdiction
+- Document verification with AI-powered validation supporting multiple languages
+- Biometric verification for high-value transactions (>$10,000 USD equivalent)
+- AML transaction monitoring and reporting with real-time alerts
+- Sanctions list screening against OFAC, UN, EU, and local lists
+- Automated regulatory reporting for Singapore MAS, Chinese authorities, Hong Kong SFC, and Southeast Asian regulators
 
 **Technical Requirements:**
 - Integration with KYC service providers (Jumio, Onfido)
@@ -396,10 +397,10 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 ## Success Metrics & KPIs
 
 ### Business Metrics
-- **Revenue:** $50M+ in first year pre-sales
-- **User Growth:** 100,000+ registered users in first year
-- **Transaction Volume:** $100M+ in total transaction value
-- **Market Share:** 25% of premium agricultural NFT market
+- **Revenue:** $50M+ in first year pre-sales (Year 1), scaling to $100M+ total transaction volume (Year 2)
+- **User Growth:** 100,000+ registered users in first year across all target markets
+- **Transaction Volume:** $50M Year 1, $100M+ cumulative by Year 2
+- **Market Share:** 25% of premium agricultural NFT market in Asia-Pacific region
 
 ### Product Metrics
 - **User Engagement:** 70%+ monthly active user rate
@@ -418,32 +419,35 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 ## Development Roadmap
 
 ### Phase 1: Foundation (Months 1-3)
-- Core smart contract development and testing
-- Basic NFT minting and trading functionality
-- WeChat Mini Program MVP
-- KYC/AML compliance integration
-- Initial product categories (lychees, longans)
+- Core smart contract development and testing (ERC-721, Presale, Escrow contracts)
+- Basic NFT minting and trading functionality for 2 product categories
+- WeChat Mini Program MVP with Web3 wallet integration
+- Singapore and China KYC/AML compliance integration
+- Initial product categories: Premium lychees and longans from Guangdong base
 
 ### Phase 2: Platform Expansion (Months 4-6)
-- Admin dashboard and producer portal
-- Multi-chain deployment (Polygon, Arbitrum)
-- Advanced traceability features
-- Payment system integration
-- Beta testing with select users
+- Admin dashboard with multi-jurisdiction compliance monitoring
+- Producer portal with real-time traceability data upload
+- Multi-chain deployment (Polygon for cost efficiency, Arbitrum for speed)
+- Advanced traceability features with IoT sensor integration
+- Payment system integration (crypto + WeChat Pay/Alipay)
+- Beta testing with 1,000 select users across Singapore and China
 
 ### Phase 3: Market Launch (Months 7-9)
-- Public platform launch
-- Marketing and user acquisition campaigns
-- Additional product categories (mangoes, durians, tea)
-- Mobile app development
-- Partnership with logistics providers
+- Public platform launch with full compliance framework
+- Marketing campaigns targeting Alex Chen persona in key cities
+- Expand to 6 product categories: mangoes, durians, tea, honey from all bases
+- Mobile app development for enhanced user experience
+- Partnership with DHL Cold Chain and regional logistics providers
+- Hong Kong and Thailand market entry with local compliance
 
 ### Phase 4: Scale & Optimize (Months 10-12)
-- International market expansion
-- Advanced analytics and AI features
-- Secondary market trading
-- Governance token launch
-- Platform optimization and scaling
+- Southeast Asia expansion (Malaysia, Vietnam) with local partnerships
+- Advanced analytics dashboard for Sarah Wong persona needs
+- Secondary NFT marketplace with royalty mechanisms
+- DAO governance token launch for community voting
+- AI-powered demand forecasting and quality prediction
+- Platform optimization for 10,000+ concurrent users
 
 ---
 
@@ -469,9 +473,11 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 ## Compliance Requirements
 
 ### Regulatory Compliance
-- **Singapore:** MAS guidelines for digital payment tokens, PSA for payment services
-- **China:** Compliance with digital asset regulations, data localization requirements
-- **International:** FATF guidelines, local payment regulations, tax compliance
+- **Singapore:** MAS guidelines for digital payment tokens, PSA for payment services, PDPA for data protection
+- **China:** Compliance with digital asset regulations, data localization requirements, PIPL compliance
+- **Hong Kong:** SFC guidelines for virtual assets, HKMA payment regulations
+- **Southeast Asia:** Thailand SEC crypto regulations, Malaysia SC digital asset guidelines
+- **International:** FATF guidelines, local payment regulations, tax compliance across all jurisdictions
 
 ### Industry Standards
 - **Food Safety:** HACCP, ISO 22000, organic certifications
@@ -486,7 +492,10 @@ A comprehensive platform that tokenizes premium agricultural products as NFTs, e
 [Detailed user journey flows for each persona]
 
 ### B. Technical Specifications
-[Detailed API specifications, database schemas, smart contract interfaces]
+- **API Specifications:** RESTful APIs for all platform interactions, GraphQL for complex queries
+- **Database Schemas:** PostgreSQL schemas for user data, product metadata, transaction records
+- **Smart Contract Interfaces:** ERC-721 NFT contract, Presale management, Escrow system, Governance DAO
+- **Integration APIs:** WeChat Mini Program APIs, payment gateways, logistics providers, KYC services
 
 ### C. Competitive Analysis
 [Analysis of existing agricultural NFT platforms and traditional e-commerce solutions]
