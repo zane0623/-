@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: juyuan-postgres
+    environment:
+      POSTGRES_DB: juyuan_nft
+      POSTGRES_USER: juyuan_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - juyuan-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U juyuan_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: juyuan-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - juyuan-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # 用户服务
+  user-service:
+    build:
+      context: ../../backend/services/user
+      dockerfile: Dockerfile
+    container_name: juyuan-user-service
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # NFT服务
+  nft-service:
+    build:
+      context: ../../backend/services/nft
+      dockerfile: Dockerfile
+    container_name: juyuan-nft-service
+    ports:
+      - "3002:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      BLOCKCHAIN_RPC_URL: ${BLOCKCHAIN_RPC_URL}
+      IPFS_GATEWAY: ${IPFS_GATEWAY}
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # 支付服务
+  payment-service:
+    build:
+      context: ../../backend/services/payment
+      dockerfile: Dockerfile
+    container_name: juyuan-payment-service
+    ports:
+      - "3004:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      WECHAT_APP_ID: ${WECHAT_APP_ID}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET}
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # 国际化服务
+  i18n-service:
+    build:
+      context: ../../backend/services/i18n
+      dockerfile: Dockerfile
+    container_name: juyuan-i18n-service
+    ports:
+      - "3009:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # 多币种服务
+  currency-service:
+    build:
+      context: ../../backend/services/currency
+      dockerfile: Dockerfile
+    container_name: juyuan-currency-service
+    ports:
+      - "3010:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY}
+      CURRENCY_LAYER_API_KEY: ${CURRENCY_LAYER_API_KEY}
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # 合规服务
+  compliance-service:
+    build:
+      context: ../../backend/services/compliance
+      dockerfile: Dockerfile
+    container_name: juyuan-compliance-service
+    ports:
+      - "3007:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://juyuan_admin:${DB_PASSWORD:-changeme}@postgres:5432/juyuan_nft
+      REDIS_URL: redis://redis:6379
+      JUMIO_API_KEY: ${JUMIO_API_KEY}
+      ONFIDO_API_KEY: ${ONFIDO_API_KEY}
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: juyuan-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/html:/usr/share/nginx/html
+    depends_on:
+      - user-service
+      - nft-service
+      - payment-service
+      - i18n-service
+      - currency-service
+      - compliance-service
+    networks:
+      - juyuan-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  juyuan-network:
+    driver: bridge 
