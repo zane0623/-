@@ -1,0 +1,25 @@
+# 忽略敏感配置文件
+.env
+.env.local
+.env.*.local
+
+# 忽略备份文件
+backups/*.sql
+backups/*.sql.gz
+backups/*.dump
+
+# 忽略日志文件
+logs/
+*.log
+
+# 忽略 SSL 证书私钥
+ssl/*.key
+ssl/*.pem
+ssl/*.crt
+
+# 保留示例文件
+!env.example
+!env.development
+!env.production
+!ssl/README.md
+!backups/.gitkeep

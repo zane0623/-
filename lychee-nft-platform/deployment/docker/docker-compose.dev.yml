@@ -1,0 +1,52 @@
+# 开发环境特定配置
+# Development-specific Docker Compose overrides
+
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      target: builder
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+
+  backend:
+    build:
+      target: builder
+    volumes:
+      - ../../backend:/app
+      - /app/node_modules
+      - /app/dist
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+
+  # 开发环境禁用某些服务以节省资源
+  prometheus:
+    profiles:
+      - monitoring
+
+  grafana:
+    profiles:
+      - monitoring
+
+  node-exporter:
+    profiles:
+      - monitoring
+
+  postgres-exporter:
+    profiles:
+      - monitoring
+
+  redis-exporter:
+    profiles:
+      - monitoring
+
+  backup:
+    profiles:
+      - backup

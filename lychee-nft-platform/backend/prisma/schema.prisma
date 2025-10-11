@@ -1,0 +1,616 @@
+// Prisma Schema for Lychee NFT Platform
+// 数据库模型定义
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 用户系统 (User System)
+// ============================================
+
+model User {
+  id            String   @id @default(uuid())
+  email         String?  @unique
+  phone         String?  @unique
+  username      String?  @unique
+  password_hash String?
+  
+  // 个人信息
+  full_name     String?
+  avatar_url    String?
+  bio           String?
+  
+  // Web3 身份
+  wallet_address String? @unique
+  ens_name       String?
+  
+  // 用户状态
+  role          UserRole   @default(USER)
+  status        UserStatus @default(ACTIVE)
+  email_verified Boolean  @default(false)
+  phone_verified Boolean  @default(false)
+  kyc_status    KYCStatus @default(NOT_SUBMITTED)
+  kyc_level     Int       @default(0)
+  
+  // 多语言偏好
+  preferred_language String @default("zh-CN")
+  preferred_currency String @default("CNY")
+  timezone          String @default("Asia/Shanghai")
+  
+  // 统计信息
+  total_orders   Int     @default(0)
+  total_spent    Decimal @default(0) @db.Decimal(20, 2)
+  loyalty_points Int     @default(0)
+  
+  // 时间戳
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  last_login_at DateTime?
+  
+  // 关联
+  orders        Order[]
+  nfts          NFT[]
+  addresses     Address[]
+  payments      Payment[]
+  reviews       Review[]
+  notifications Notification[]
+  kyc_records   KYCRecord[]
+  
+  @@index([email])
+  @@index([wallet_address])
+  @@index([created_at])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ORCHARD_OWNER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+enum KYCStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============================================
+// KYC 认证 (KYC Verification)
+// ============================================
+
+model KYCRecord {
+  id         String   @id @default(uuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  
+  // 身份信息
+  id_type    String   // passport, id_card, driver_license
+  id_number  String
+  id_images  String[] // 身份证照片URLs
+  
+  // 个人信息
+  full_name      String
+  date_of_birth  DateTime
+  nationality    String
+  address        Json
+  
+  // 审核信息
+  status         KYCStatus @default(PENDING)
+  review_notes   String?
+  reviewed_by    String?
+  reviewed_at    DateTime?
+  
+  // 时间戳
+  submitted_at DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  
+  @@index([user_id])
+  @@index([status])
+  @@map("kyc_records")
+}
+
+// ============================================
+// 地址管理 (Address Management)
+// ============================================
+
+model Address {
+  id            String  @id @default(uuid())
+  user_id       String
+  user          User    @relation(fields: [user_id], references: [id])
+  
+  // 地址信息
+  recipient_name  String
+  phone          String
+  country        String
+  province       String
+  city           String
+  district       String?
+  address_line1  String
+  address_line2  String?
+  postal_code    String
+  
+  // 地址类型
+  is_default     Boolean @default(false)
+  label          String? // home, office, etc.
+  
+  // 时间戳
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  // 关联
+  orders Order[]
+  
+  @@index([user_id])
+  @@map("addresses")
+}
+
+// ============================================
+// 果园管理 (Orchard Management)
+// ============================================
+
+model Orchard {
+  id          String  @id @default(uuid())
+  name        String
+  name_en     String?
+  description String
+  description_en String?
+  
+  // 位置信息
+  location    Json    // { country, province, city, coordinates }
+  area        Decimal @db.Decimal(10, 2) // 面积（亩）
+  
+  // 媒体
+  logo_url    String?
+  cover_image String?
+  images      String[]
+  
+  // 认证信息
+  certifications Json[] // 有机认证、质量认证等
+  
+  // 统计
+  rating      Decimal? @db.Decimal(3, 2)
+  total_sales Int     @default(0)
+  
+  // 状态
+  status      OrchardStatus @default(ACTIVE)
+  verified    Boolean       @default(false)
+  
+  // 时间戳
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  // 关联
+  presales Presale[]
+  
+  @@index([status])
+  @@map("orchards")
+}
+
+enum OrchardStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ============================================
+// 预售活动 (Presale Activities)
+// ============================================
+
+model Presale {
+  id             String  @id @default(uuid())
+  presale_number String  @unique
+  orchard_id     String
+  orchard        Orchard @relation(fields: [orchard_id], references: [id])
+  
+  // 基本信息
+  title       String
+  title_en    String?
+  subtitle    String?
+  subtitle_en String?
+  description String
+  description_en String?
+  
+  // 媒体
+  cover_image   String
+  banner_images String[]
+  video_url     String?
+  
+  // 产品信息
+  product_info Json // { category, variety, specification, origin }
+  
+  // 定价
+  pricing Json // { presale_price, market_price, currency, discount_rate }
+  
+  // 库存
+  inventory Json // { total, sold, available, min_purchase, max_purchase, limit_per_user }
+  
+  // 时间线
+  timeline Json // { presale_start, presale_end, harvest_start, harvest_end, delivery_start, delivery_end }
+  
+  // NFT配置
+  nft_config Json? // { contract_address, token_uri_base, metadata }
+  
+  // 配送信息
+  shipping Json // { methods, fees, estimated_days, supported_regions }
+  
+  // 状态
+  status       PresaleStatus @default(DRAFT)
+  audit_status AuditStatus   @default(PENDING)
+  audit_reason String?
+  
+  // 标签
+  tags String[]
+  
+  // 统计
+  stats Json // { views, likes, shares, conversion_rate }
+  
+  // 时间戳
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  published_at DateTime?
+  
+  // 关联
+  orders Order[]
+  nfts   NFT[]
+  
+  @@index([orchard_id])
+  @@index([status])
+  @@index([audit_status])
+  @@index([created_at])
+  @@map("presales")
+}
+
+enum PresaleStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  ENDED
+  SOLD_OUT
+  CANCELLED
+}
+
+enum AuditStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============================================
+// 订单管理 (Order Management)
+// ============================================
+
+model Order {
+  id           String  @id @default(uuid())
+  order_number String  @unique
+  user_id      String
+  user         User    @relation(fields: [user_id], references: [id])
+  presale_id   String
+  presale      Presale @relation(fields: [presale_id], references: [id])
+  
+  // 产品信息
+  product_info Json // { title, quantity, unit_price, specifications }
+  
+  // 金额信息
+  amount_info Json // { subtotal, shipping_fee, discount, tax, total }
+  
+  // 配送信息
+  address_id     String?
+  address        Address? @relation(fields: [address_id], references: [id])
+  shipping_info  Json     // { recipient, phone, address, tracking }
+  
+  // 支付信息
+  payment_info Json? // { method, paid_at, tx_hash, receipt_url }
+  
+  // 订单状态
+  status OrderStatus @default(PENDING)
+  
+  // 时间线
+  payment_deadline DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  paid_at          DateTime?
+  confirmed_at     DateTime?
+  shipped_at       DateTime?
+  delivered_at     DateTime?
+  completed_at     DateTime?
+  cancelled_at     DateTime?
+  refunded_at      DateTime?
+  
+  // 备注
+  remark   String?
+  metadata Json?
+  
+  // 关联
+  nfts     NFT[]
+  payments Payment[]
+  reviews  Review[]
+  refunds  Refund[]
+  
+  @@index([user_id])
+  @@index([presale_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+// ============================================
+// NFT 管理 (NFT Management)
+// ============================================
+
+model NFT {
+  id         String  @id @default(uuid())
+  token_id   String  @unique
+  user_id    String
+  user       User    @relation(fields: [user_id], references: [id])
+  presale_id String
+  presale    Presale @relation(fields: [presale_id], references: [id])
+  order_id   String?
+  order      Order?  @relation(fields: [order_id], references: [id])
+  
+  // 合约信息
+  contract_address String
+  blockchain       String @default("BSC")
+  
+  // 元数据
+  token_uri String
+  metadata  Json   // { name, description, image, attributes, animation_url }
+  
+  // 产品信息
+  product_info Json // { type, quantity, quality, harvest_date, origin }
+  
+  // 状态
+  status    NFTStatus @default(MINTING)
+  redeemed  Boolean   @default(false)
+  delivered Boolean   @default(false)
+  
+  // 交易历史
+  mint_tx_hash     String?
+  transfer_history Json[] // [{ from, to, timestamp, tx_hash }]
+  
+  // 时间戳
+  minted_at   DateTime?
+  redeemed_at DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  @@index([user_id])
+  @@index([presale_id])
+  @@index([order_id])
+  @@index([contract_address, token_id])
+  @@map("nfts")
+}
+
+enum NFTStatus {
+  MINTING
+  MINTED
+  TRANSFERRED
+  BURNED
+}
+
+// ============================================
+// 支付管理 (Payment Management)
+// ============================================
+
+model Payment {
+  id             String  @id @default(uuid())
+  payment_number String  @unique
+  user_id        String
+  user           User    @relation(fields: [user_id], references: [id])
+  order_id       String?
+  order          Order?  @relation(fields: [order_id], references: [id])
+  
+  // 支付信息
+  amount        Decimal       @db.Decimal(20, 2)
+  currency      String
+  payment_method String       // crypto, wechat, alipay, credit_card
+  status        PaymentStatus @default(PENDING)
+  
+  // 加密货币支付
+  crypto_info Json? // { token, network, from_address, to_address, tx_hash }
+  
+  // 第三方支付
+  provider_info Json? // { provider, transaction_id, receipt }
+  
+  // 时间戳
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  expired_at  DateTime?
+  confirmed_at DateTime?
+  
+  @@index([user_id])
+  @@index([order_id])
+  @@index([status])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+// ============================================
+// 退款管理 (Refund Management)
+// ============================================
+
+model Refund {
+  id         String  @id @default(uuid())
+  order_id   String
+  order      Order   @relation(fields: [order_id], references: [id])
+  user_id    String
+  
+  // 退款信息
+  amount     Decimal      @db.Decimal(20, 2)
+  currency   String
+  reason     String
+  status     RefundStatus @default(PENDING)
+  
+  // 审核信息
+  review_notes String?
+  reviewed_by  String?
+  reviewed_at  DateTime?
+  
+  // 退款详情
+  refund_method String? // original, wallet, bank
+  refund_info   Json?   // 退款账户信息
+  
+  // 时间戳
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  approved_at   DateTime?
+  rejected_at   DateTime?
+  completed_at  DateTime?
+  
+  @@index([order_id])
+  @@index([status])
+  @@map("refunds")
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// 评价系统 (Review System)
+// ============================================
+
+model Review {
+  id       String @id @default(uuid())
+  user_id  String
+  user     User   @relation(fields: [user_id], references: [id])
+  order_id String
+  order    Order  @relation(fields: [order_id], references: [id])
+  
+  // 评价内容
+  rating  Int    // 1-5 stars
+  title   String?
+  content String
+  images  String[]
+  
+  // 评价维度
+  quality_rating   Int? // 产品质量
+  packaging_rating Int? // 包装质量
+  delivery_rating  Int? // 配送服务
+  
+  // 状态
+  status ReviewStatus @default(PENDING)
+  is_anonymous Boolean @default(false)
+  
+  // 商家回复
+  reply    String?
+  replied_at DateTime?
+  
+  // 时间戳
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@index([user_id])
+  @@index([order_id])
+  @@index([status])
+  @@map("reviews")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  HIDDEN
+}
+
+// ============================================
+// 通知系统 (Notification System)
+// ============================================
+
+model Notification {
+  id      String @id @default(uuid())
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+  
+  // 通知内容
+  type    NotificationType
+  title   String
+  content String
+  link    String?
+  
+  // 多语言
+  title_translations   Json? // { en, zh, th, etc }
+  content_translations Json?
+  
+  // 状态
+  read    Boolean @default(false)
+  read_at DateTime?
+  
+  // 时间戳
+  created_at DateTime @default(now())
+  
+  @@index([user_id, read])
+  @@index([created_at])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  PAYMENT_SUCCESS
+  SHIPMENT_UPDATE
+  NFT_MINTED
+  PRESALE_START
+  PRESALE_END
+  SYSTEM_ANNOUNCEMENT
+}
+
+// ============================================
+// 系统配置 (System Configuration)
+// ============================================
+
+model SystemConfig {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+  
+  description String?
+  category    String? // payment, blockchain, business, etc
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@map("system_configs")
+}
+

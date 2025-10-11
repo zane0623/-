@@ -1,86 +1,413 @@
 version: '3.8'
 
 services:
+  # ==================== 核心应用服务 ====================
+  
   # 前端服务
   frontend:
     build: 
       context: ../../frontend
       dockerfile: Dockerfile
+    container_name: lychee-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
-      - NEXT_PUBLIC_BLOCKCHAIN_RPC=https://polygon-rpc.com
+      - NEXT_PUBLIC_API_URL=${API_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_BLOCKCHAIN_RPC=${BLOCKCHAIN_RPC:-https://polygon-rpc.com}
       - NEXT_PUBLIC_CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - NEXT_PUBLIC_CHAIN_ID=${CHAIN_ID:-137}
+      - NODE_ENV=${NODE_ENV:-production}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - lychee-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "com.lychee.service=frontend"
+      - "com.lychee.description=Next.js Frontend Application"
 
   # 后端服务
   backend:
     build:
       context: ../../backend
       dockerfile: Dockerfile
+    container_name: lychee-backend
+    restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/lychee_db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-lychee_db}
       - REDIS_URL=redis://redis:6379
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - JWT_SECRET=${JWT_SECRET}
-      - BLOCKCHAIN_RPC=https://polygon-rpc.com
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - BLOCKCHAIN_RPC=${BLOCKCHAIN_RPC:-https://polygon-rpc.com}
       - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - CHAIN_ID=${CHAIN_ID:-137}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-10485760}
+      - UPLOAD_DIR=/app/uploads
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - PINATA_API_KEY=${PINATA_API_KEY}
+      - PINATA_SECRET_KEY=${PINATA_SECRET_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - lychee-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "com.lychee.service=backend"
+      - "com.lychee.description=Express.js Backend API"
 
-  # 数据库
+  # ==================== 数据存储服务 ====================
+
+  # PostgreSQL 数据库
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: lychee-postgres
+    restart: unless-stopped
     environment:
-      - POSTGRES_DB=lychee_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB:-lychee_db}
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backups:/backups
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - lychee-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-lychee_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2621kB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "com.lychee.service=database"
+      - "com.lychee.description=PostgreSQL Database"
 
-  # 缓存
+  # Redis 缓存
   redis:
     image: redis:7-alpine
+    container_name: lychee-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - lychee-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "com.lychee.service=cache"
+      - "com.lychee.description=Redis Cache"
+
+  # ==================== 网关和代理 ====================
 
   # Nginx 反向代理
   nginx:
     image: nginx:alpine
+    container_name: lychee-nginx
+    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
     depends_on:
       - frontend
       - backend
     networks:
       - lychee-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "com.lychee.service=gateway"
+      - "com.lychee.description=Nginx Reverse Proxy"
+
+  # ==================== 监控和日志服务 ====================
+
+  # Prometheus 监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lychee-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=monitoring"
+      - "com.lychee.description=Prometheus Monitoring"
+
+  # Grafana 可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lychee-grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=monitoring"
+      - "com.lychee.description=Grafana Dashboard"
+
+  # Node Exporter (系统指标)
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: lychee-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=monitoring"
+      - "com.lychee.description=Node Exporter"
+
+  # Postgres Exporter (数据库指标)
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: lychee-postgres-exporter
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-lychee_db}?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=monitoring"
+      - "com.lychee.description=Postgres Exporter"
+
+  # Redis Exporter (缓存指标)
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: lychee-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    depends_on:
+      - redis
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=monitoring"
+      - "com.lychee.description=Redis Exporter"
+
+  # ==================== 工具和管理服务 ====================
+
+  # pgAdmin (数据库管理工具)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lychee-pgadmin
+    restart: unless-stopped
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@lychee.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=tools"
+      - "com.lychee.description=pgAdmin Database Manager"
+
+  # Redis Commander (Redis 管理工具)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: lychee-redis-commander
+    restart: unless-stopped
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    depends_on:
+      - redis
+    networks:
+      - lychee-network
+    labels:
+      - "com.lychee.service=tools"
+      - "com.lychee.description=Redis Commander"
+
+  # ==================== 备份服务 ====================
+
+  # 自动备份服务
+  backup:
+    image: postgres:15-alpine
+    container_name: lychee-backup
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-lychee_db}
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-7}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    depends_on:
+      - postgres
+    networks:
+      - lychee-network
+    command: sh -c "chmod +x /backup.sh && crond -f -l 2"
+    labels:
+      - "com.lychee.service=backup"
+      - "com.lychee.description=Automated Backup Service"
 
 volumes:
+  # 数据持久化
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
+  
+  # 应用数据
+  backend_uploads:
+    driver: local
+  backend_logs:
+    driver: local
+  
+  # 监控数据
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  
+  # 管理工具数据
+  pgadmin_data:
+    driver: local
+  
+  # Nginx 数据
+  nginx_cache:
+    driver: local
+  nginx_logs:
+    driver: local
 
 networks:
   lychee-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
