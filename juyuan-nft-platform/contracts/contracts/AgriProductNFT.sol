@@ -229,6 +229,18 @@ contract AgriProductNFT is ERC721, ERC721URIStorage, Ownable, Pausable, Reentran
         require(balance > 0, "No balance to withdraw");
         payable(owner()).transfer(balance);
     }
+
+    /**
+     * @dev 获取用户所有的NFT (别名)
+     */
+    function getUserNFTs(address user) public view returns (uint256[] memory) {
+        return userTokens[user];
+    }
+
+    /**
+     * @dev 接收ETH
+     */
+    receive() external payable {}
     
     // The following functions are overrides required by Solidity.
     

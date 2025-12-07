@@ -3,38 +3,31 @@
  */
 
 import { Router } from 'express';
+import { register, login, getCurrentUser, logout, verifyToken } from '../controllers/auth.controller';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // 注册
-router.post('/register', (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Not implemented yet. Please implement this endpoint.'
-  });
-});
+router.post('/register', register);
 
 // 登录
-router.post('/login', (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Not implemented yet. Please implement this endpoint.'
-  });
-});
+router.post('/login', login);
 
-// Web3钱包登录
+// 登出
+router.post('/logout', authenticateToken, logout);
+
+// 获取当前用户（需要认证）
+router.get('/me', authenticateToken, getCurrentUser);
+
+// 验证Token
+router.post('/verify', verifyToken);
+
+// Web3钱包登录（暂未实现）
 router.post('/wallet-login', (req, res) => {
   res.status(501).json({
     success: false,
-    message: 'Not implemented yet. Please implement this endpoint.'
-  });
-});
-
-// 获取当前用户
-router.get('/me', (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Not implemented yet. Please implement this endpoint.'
+    message: 'Web3钱包登录功能即将推出'
   });
 });
 

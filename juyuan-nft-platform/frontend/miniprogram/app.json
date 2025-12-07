@@ -1,0 +1,53 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/presale/presale",
+    "pages/presale/detail/detail",
+    "pages/my-nfts/my-nfts",
+    "pages/trace/trace",
+    "pages/trace/result/result",
+    "pages/profile/profile",
+    "pages/login/login"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#22C55E",
+    "navigationBarTitleText": "钜园农业NFT",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#22C55E",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/presale/presale",
+        "text": "预售",
+        "iconPath": "assets/icons/market.png",
+        "selectedIconPath": "assets/icons/market-active.png"
+      },
+      {
+        "pagePath": "pages/my-nfts/my-nfts",
+        "text": "我的NFT",
+        "iconPath": "assets/icons/nft.png",
+        "selectedIconPath": "assets/icons/nft-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
+

@@ -1,0 +1,77 @@
+<!-- 我的NFT页 -->
+<view class="page">
+  <!-- 登录提示 -->
+  <view class="login-prompt" wx:if="{{!isLoggedIn}}">
+    <image src="/assets/images/login-prompt.png" class="prompt-image" />
+    <text class="prompt-title">登录后查看您的NFT</text>
+    <text class="prompt-desc">连接钱包或手机号登录</text>
+    <button class="btn btn-primary" bindtap="goLogin">立即登录</button>
+  </view>
+
+  <!-- NFT列表 -->
+  <view class="nft-container" wx:else>
+    <!-- 统计卡片 -->
+    <view class="stats-card">
+      <view class="stat-item">
+        <text class="stat-value">{{stats.total}}</text>
+        <text class="stat-label">NFT总数</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.pending}}</text>
+        <text class="stat-label">待交付</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.delivered}}</text>
+        <text class="stat-label">已交付</text>
+      </view>
+    </view>
+
+    <!-- 筛选 -->
+    <view class="filter-bar">
+      <view class="filter-item {{currentFilter === 'all' ? 'active' : ''}}" bindtap="filterNFTs" data-filter="all">全部</view>
+      <view class="filter-item {{currentFilter === 'pending' ? 'active' : ''}}" bindtap="filterNFTs" data-filter="pending">待交付</view>
+      <view class="filter-item {{currentFilter === 'delivered' ? 'active' : ''}}" bindtap="filterNFTs" data-filter="delivered">已交付</view>
+    </view>
+
+    <!-- NFT列表 -->
+    <view class="nft-list">
+      <view class="nft-card" wx:for="{{nfts}}" wx:key="id" bindtap="goNFTDetail" data-id="{{item.tokenId}}">
+        <image src="{{item.image || '/assets/images/default-nft.jpg'}}" mode="aspectFill" class="nft-image" />
+        <view class="nft-info">
+          <view class="nft-header">
+            <text class="nft-name">{{item.productType}}</text>
+            <view class="nft-status status-{{item.deliveryStatus}}">
+              {{item.deliveryStatus === 'DELIVERED' ? '已交付' : '待交付'}}
+            </view>
+          </view>
+          <text class="nft-token">Token #{{item.tokenId}}</text>
+          <view class="nft-meta">
+            <text>📍 {{item.originBase}}</text>
+            <text>📦 {{item.quantity}}{{item.unit}}</text>
+          </view>
+          <view class="nft-footer">
+            <text class="nft-quality">{{item.qualityGrade}}</text>
+            <view class="nft-actions">
+              <view class="action-btn" catchtap="viewTrace" data-id="{{item.tokenId}}">溯源</view>
+              <view class="action-btn primary" wx:if="{{item.deliveryStatus !== 'DELIVERED'}}">申请交付</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && nfts.length === 0}}">
+      <image src="/assets/images/empty-nft.png" />
+      <text>暂无NFT</text>
+      <text class="empty-hint">前往预售市场购买</text>
+      <button class="btn btn-primary" bindtap="goPresale">去购买</button>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{loading}}">加载中...</view>
+  </view>
+</view>
+

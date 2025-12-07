@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 
 interface WalletConnectProps {
@@ -15,16 +15,24 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    checkIfWalletIsConnected();
+  const updateBalance = useCallback(async (address: string) => {
+    try {
+      if (!window.ethereum) return;
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const bal = await provider.getBalance(address);
+      setBalance(ethers.formatEther(bal));
+    } catch (err) {
+      console.error('Error fetching balance:', err);
+    }
   }, []);
 
-  const checkIfWalletIsConnected = async () => {
+  const checkIfWalletIsConnected = useCallback(async () => {
     try {
       if (!window.ethereum) return;
 
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      
+
       if (accounts.length > 0) {
         const account = accounts[0];
         setAccount(account);
@@ -34,7 +42,11 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
     } catch (err) {
       console.error('Error checking wallet connection:', err);
     }
-  };
+  }, [onConnect, updateBalance]);
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  }, [checkIfWalletIsConnected]);
 
   const connectWallet = async () => {
     try {
@@ -66,18 +78,6 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
     setAccount(null);
     setBalance('0');
     onDisconnect();
-  };
-
-  const updateBalance = async (address: string) => {
-    try {
-      if (!window.ethereum) return;
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const balance = await provider.getBalance(address);
-      setBalance(ethers.formatEther(balance));
-    } catch (err) {
-      console.error('Error fetching balance:', err);
-    }
   };
 
   const shortenAddress = (address: string) => {

@@ -1,0 +1,19 @@
+{
+  "recommendations": [
+    // Flutter & Dart 必需
+    "dart-code.dart-code",
+    "dart-code.flutter",
+    // 代码质量
+    "usernamehw.errorlens",
+    // Git增强
+    "eamodio.gitlens",
+    // TODO管理
+    "gruntfuggly.todo-tree",
+    // 代码格式化
+    "esbenp.prettier-vscode",
+    // 其他推荐
+    "alefragnani.bookmarks",
+    "ms-azuretools.vscode-docker",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

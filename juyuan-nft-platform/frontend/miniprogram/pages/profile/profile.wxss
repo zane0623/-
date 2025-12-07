@@ -1,0 +1,172 @@
+/* 个人中心页样式 */
+.page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 用户信息 */
+.user-section {
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  padding: 60rpx 30rpx 80rpx;
+}
+
+.user-card,
+.login-card {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  margin-right: 30rpx;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.wallet {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.kyc-status {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.kyc-status image {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 8rpx;
+}
+
+.kyc-status text {
+  font-size: 22rpx;
+  color: #fff;
+}
+
+.login-text {
+  flex: 1;
+}
+
+.login-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.login-desc {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.arrow {
+  width: 32rpx;
+  height: 32rpx;
+  opacity: 0.6;
+}
+
+/* 菜单 */
+.menu-section {
+  margin-top: -40rpx;
+  padding: 0 20rpx;
+}
+
+.menu-group {
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  background: #fff;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.contact-btn {
+  line-height: normal;
+  text-align: left;
+}
+
+.contact-btn::after {
+  display: none;
+}
+
+.menu-icon {
+  width: 44rpx;
+  height: 44rpx;
+  margin-right: 20rpx;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.menu-badge {
+  font-size: 22rpx;
+  color: #F97316;
+  margin-right: 10rpx;
+}
+
+.menu-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  opacity: 0.3;
+}
+
+/* 退出登录 */
+.logout-section {
+  padding: 40rpx 20rpx;
+}
+
+.logout-btn {
+  background: #fff;
+  color: #FF4D4F;
+  font-size: 28rpx;
+  border-radius: 44rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+}
+
+.logout-btn::after {
+  display: none;
+}
+
+/* 版本信息 */
+.version {
+  text-align: center;
+  padding: 40rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+

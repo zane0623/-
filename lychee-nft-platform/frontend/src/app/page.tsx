@@ -12,7 +12,10 @@ export default function HomePage() {
 
   useEffect(() => {
     // 检查后端连接
-    fetch(process.env.NEXT_PUBLIC_API_URL + '/health')
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const healthUrl = apiUrl.replace('/api', '') + '/health';
+    
+    fetch(healthUrl)
       .then(res => res.json())
       .then(data => {
         setSystemStatus(data);

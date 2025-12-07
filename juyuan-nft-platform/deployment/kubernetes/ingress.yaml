@@ -1,0 +1,107 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: juyuan-nft-ingress
+  namespace: juyuan-nft
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+  - hosts:
+    - juyuan-nft.com
+    - www.juyuan-nft.com
+    - api.juyuan-nft.com
+    secretName: juyuan-nft-tls
+  rules:
+  # Frontend
+  - host: juyuan-nft.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+  - host: www.juyuan-nft.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+  # API Gateway
+  - host: api.juyuan-nft.com
+    http:
+      paths:
+      # User Service
+      - path: /api/v1/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port:
+              number: 3001
+      - path: /api/v1/users
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port:
+              number: 3001
+      # NFT Service
+      - path: /api/v1/nft
+        pathType: Prefix
+        backend:
+          service:
+            name: nft-service
+            port:
+              number: 3002
+      - path: /api/v1/metadata
+        pathType: Prefix
+        backend:
+          service:
+            name: nft-service
+            port:
+              number: 3002
+      # Payment Service
+      - path: /api/v1/payment
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 3004
+      - path: /api/v1/webhook
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 3004
+      # Logistics Service
+      - path: /api/v1/delivery
+        pathType: Prefix
+        backend:
+          service:
+            name: logistics-service
+            port:
+              number: 3006
+      - path: /api/v1/tracking
+        pathType: Prefix
+        backend:
+          service:
+            name: logistics-service
+            port:
+              number: 3006
+
+

@@ -1,0 +1,101 @@
+<!-- 溯源查询页 -->
+<view class="page">
+  <!-- 搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        placeholder="输入NFT Token ID" 
+        type="number"
+        value="{{tokenId}}"
+        bindinput="onInputChange"
+      />
+      <view class="search-btn" bindtap="doSearch">
+        查询
+      </view>
+    </view>
+    <view class="scan-btn" bindtap="scanQRCode">
+      <image src="/assets/icons/scan-white.png" />
+      <text>扫码溯源</text>
+    </view>
+  </view>
+
+  <!-- 最近查询 -->
+  <view class="section" wx:if="{{recentSearches.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">最近查询</text>
+      <text class="section-clear" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="recent-list">
+      <view 
+        class="recent-item" 
+        wx:for="{{recentSearches}}" 
+        wx:key="index"
+        bindtap="searchRecent"
+        data-id="{{item}}"
+      >
+        <text class="recent-id">Token #{{item}}</text>
+        <image src="/assets/icons/arrow-right.png" class="recent-arrow" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 溯源说明 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">什么是区块链溯源？</text>
+    </view>
+    <view class="intro-card card">
+      <view class="intro-item">
+        <view class="intro-icon">🔗</view>
+        <view class="intro-content">
+          <text class="intro-title">不可篡改</text>
+          <text class="intro-desc">所有数据上链存储，确保信息真实可靠</text>
+        </view>
+      </view>
+      <view class="intro-item">
+        <view class="intro-icon">📍</view>
+        <view class="intro-content">
+          <text class="intro-title">全程追溯</text>
+          <text class="intro-desc">从种植到交付，每一步都有迹可循</text>
+        </view>
+      </view>
+      <view class="intro-item">
+        <view class="intro-icon">✅</view>
+        <view class="intro-content">
+          <text class="intro-title">权威认证</text>
+          <text class="intro-desc">第三方检测报告，品质有保障</text>
+        </view>
+      </view>
+      <view class="intro-item">
+        <view class="intro-icon">🌱</view>
+        <view class="intro-content">
+          <text class="intro-title">绿色有机</text>
+          <text class="intro-desc">严格的种植标准，健康安全</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 使用指南 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">如何查询溯源？</text>
+    </view>
+    <view class="guide-card card">
+      <view class="guide-step">
+        <view class="guide-num">1</view>
+        <text>在产品包装上找到溯源二维码或Token ID</text>
+      </view>
+      <view class="guide-step">
+        <view class="guide-num">2</view>
+        <text>扫描二维码或手动输入Token ID</text>
+      </view>
+      <view class="guide-step">
+        <view class="guide-num">3</view>
+        <text>查看完整的产品溯源信息和检测报告</text>
+      </view>
+    </view>
+  </view>
+</view>
+

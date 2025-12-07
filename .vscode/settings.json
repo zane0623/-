@@ -1,0 +1,60 @@
+{
+  // Flutter & Dart 配置
+  "dart.flutterSdkPath": "/usr/local/share/flutter",
+  "dart.lineLength": 80,
+  "dart.analysisExcludedFolders": [
+    ".dart_tool",
+    "build"
+  ],
+  // 编辑器配置
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "editor.rulers": [
+    80
+  ],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  // Dart特定配置
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.rulers": [
+      80
+    ],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+  // 文件排除
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true
+  },
+  // 搜索排除
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true
+  },
+  // Flutter特定
+  "dart.debugExternalPackageLibraries": false,
+  "dart.debugSdkLibraries": false,
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  // Git配置
+  "git.ignoreLimitWarning": true,
+  // 其他
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "liveServer.settings.port": 5501
+}

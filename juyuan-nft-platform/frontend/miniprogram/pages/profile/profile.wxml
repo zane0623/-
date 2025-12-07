@@ -1,0 +1,96 @@
+<!-- 个人中心页 -->
+<view class="page">
+  <!-- 用户信息 -->
+  <view class="user-section">
+    <view class="user-card" wx:if="{{userInfo}}">
+      <image class="avatar" src="{{userInfo.avatar || '/assets/images/default-avatar.png'}}" />
+      <view class="user-info">
+        <text class="username">{{userInfo.username || '用户' + userInfo.id.slice(0, 6)}}</text>
+        <text class="wallet" wx:if="{{userInfo.walletAddress}}">
+          {{formatWallet(userInfo.walletAddress)}}
+        </text>
+        <view class="kyc-status" wx:if="{{userInfo.kycStatus === 'VERIFIED'}}">
+          <image src="/assets/icons/verified.png" />
+          <text>已实名认证</text>
+        </view>
+      </view>
+    </view>
+    <view class="login-card" wx:else bindtap="goLogin">
+      <image class="avatar" src="/assets/images/default-avatar.png" />
+      <view class="login-text">
+        <text class="login-title">登录 / 注册</text>
+        <text class="login-desc">登录后享受更多服务</text>
+      </view>
+      <image class="arrow" src="/assets/icons/arrow-right.png" />
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/orders/orders">
+        <image class="menu-icon" src="/assets/icons/order.png" />
+        <text class="menu-text">我的订单</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/delivery/delivery">
+        <image class="menu-icon" src="/assets/icons/delivery.png" />
+        <text class="menu-text">交付记录</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/address/address">
+        <image class="menu-icon" src="/assets/icons/address.png" />
+        <text class="menu-text">收货地址</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+    </view>
+
+    <view class="menu-group">
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/kyc/kyc" wx:if="{{userInfo && userInfo.kycStatus !== 'VERIFIED'}}">
+        <image class="menu-icon" src="/assets/icons/kyc.png" />
+        <text class="menu-text">实名认证</text>
+        <view class="menu-badge">去认证</view>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/wallet/wallet">
+        <image class="menu-icon" src="/assets/icons/wallet.png" />
+        <text class="menu-text">钱包管理</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/settings/settings">
+        <image class="menu-icon" src="/assets/icons/settings.png" />
+        <text class="menu-text">设置</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+    </view>
+
+    <view class="menu-group">
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/help/help">
+        <image class="menu-icon" src="/assets/icons/help.png" />
+        <text class="menu-text">帮助中心</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/about/about">
+        <image class="menu-icon" src="/assets/icons/about.png" />
+        <text class="menu-text">关于我们</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </view>
+      <button class="menu-item contact-btn" open-type="contact">
+        <image class="menu-icon" src="/assets/icons/service.png" />
+        <text class="menu-text">在线客服</text>
+        <image class="menu-arrow" src="/assets/icons/arrow-right.png" />
+      </button>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section" wx:if="{{userInfo}}">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+
+  <!-- 版本信息 -->
+  <view class="version">
+    <text>钜园农业NFT v1.0.0</text>
+  </view>
+</view>
+

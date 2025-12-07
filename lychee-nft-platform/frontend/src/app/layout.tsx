@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import Navbar from '@/components/Navbar'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { Web3Provider } from '@/hooks/useWeb3'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,12 +20,16 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50">
-          <Navbar />
-          <main className="pt-16">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <Web3Provider>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50">
+              <Navbar />
+              <main className="pt-16">
+                {children}
+              </main>
+            </div>
+          </Web3Provider>
+        </AuthProvider>
       </body>
     </html>
   )

@@ -1,5 +1,4 @@
-// Prisma Schema for Juyuan NFT Platform
-
+// Prisma Schema for 钜园农业NFT平台
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,52 +8,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ========================================
-// 用户模块
-// ========================================
-
+// 用户表
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  username      String    @unique
-  password      String
-  walletAddress String?   @unique
-  role          UserRole  @default(USER)
-  kycStatus     KYCStatus @default(NOT_SUBMITTED)
-  kycData       Json?
+  id                String    @id @default(uuid())
+  email             String?   @unique
+  phone             String?   @unique
+  username          String?
+  passwordHash      String?
+  walletAddress     String?   @unique
+  avatar            String?
+  role              UserRole  @default(USER)
+  kycStatus         KYCStatus @default(NOT_SUBMITTED)
+  pushToken         String?
+  locale            String    @default("zh-CN")
+  currency          String    @default("CNY")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   
-  // 个人信息
-  firstName     String?
-  lastName      String?
-  phoneNumber   String?
-  country       String?
-  language      String?   @default("zh-CN")
-  currency      String?   @default("CNY")
+  // Relations
+  nfts              NFT[]
+  purchases         Purchase[]
+  kycApplications   KYC[]
+  notifications     Notification[]
+  addresses         Address[]
+  deliveryRequests  DeliveryRequest[]
   
-  // 状态
-  isActive      Boolean   @default(true)
-  emailVerified Boolean   @default(false)
-  
-  // 时间戳
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastLoginAt   DateTime?
-  
-  // 关系
-  nfts          NFT[]
-  purchases     Purchase[]
-  orders        Order[]
-  
-  @@index([email])
-  @@index([walletAddress])
   @@map("users")
 }
 
 enum UserRole {
   USER
-  SELLER
   ADMIN
   SUPER_ADMIN
+  FARMER
 }
 
 enum KYCStatus {
@@ -62,137 +48,286 @@ enum KYCStatus {
   PENDING
   APPROVED
   REJECTED
-  EXPIRED
 }
 
-// ========================================
-// NFT模块
-// ========================================
-
+// NFT表
 model NFT {
-  id              String     @id @default(uuid())
-  tokenId         String     @unique
-  contractAddress String
-  
-  // 产品信息
+  id              String          @id @default(uuid())
+  tokenId         Int             @unique
   productType     String
-  quantity        Int
+  quantity        Decimal
+  unit            String          @default("kg")
   qualityGrade    String
-  harvestDate     DateTime?
+  harvestDate     DateTime
   originBase      String
+  batchId         String?
+  ipfsHash        String?
+  metadataUri     String?
+  contractAddress String?
+  mintTxHash      String?
+  deliveryStatus  DeliveryStatus  @default(PENDING)
+  ownerId         String?
+  owner           User?           @relation(fields: [ownerId], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   
-  // 元数据
-  ipfsHash        String
-  metadata        Json
-  imageUrl        String?
+  // Relations
+  traceEvents     TraceEvent[]
+  deliveryRequests DeliveryRequest[]
   
-  // 状态
-  status          NFTStatus  @default(MINTED)
-  delivered       Boolean    @default(false)
-  deliveryDate    DateTime?
-  
-  // 所有权
-  ownerId         String
-  owner           User       @relation(fields: [ownerId], references: [id])
-  originalOwnerId String
-  
-  // 时间戳
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  mintedAt        DateTime   @default(now())
-  
-  // 关系
-  purchase        Purchase?
-  traceability    TraceabilityRecord[]
-  
-  @@index([ownerId])
-  @@index([tokenId])
-  @@index([productType])
   @@map("nfts")
 }
 
-enum NFTStatus {
-  MINTED
-  LISTED
-  SOLD
+enum DeliveryStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
   DELIVERED
-  BURNED
 }
 
-// ========================================
-// 预售模块
-// ========================================
-
-model PresaleBatch {
-  id              String    @id @default(uuid())
-  batchId         String    @unique
+// 预售表
+model Presale {
+  id               String        @id @default(uuid())
+  productType      String
+  maxSupply        Int
+  currentSupply    Int           @default(0)
+  price            Decimal
+  currency         String        @default("CNY")
+  startTime        DateTime
+  endTime          DateTime
+  minPurchase      Int           @default(1)
+  maxPurchase      Int           @default(100)
+  whitelistEnabled Boolean       @default(false)
+  status           PresaleStatus @default(UPCOMING)
+  originBase       String?
+  harvestDate      DateTime?
+  description      String?
+  image            String?
+  metadata         Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   
-  // 预售配置
-  productType     String
-  totalSupply     Int
-  soldAmount      Int       @default(0)
-  price           Decimal   @db.Decimal(20, 8)
-  currency        String    @default("ETH")
+  // Relations
+  purchases        Purchase[]
+  whitelist        Whitelist[]
   
-  // 时间配置
-  startTime       DateTime
-  endTime         DateTime
-  
-  // 限制
-  minPurchase     Int       @default(1)
-  maxPurchase     Int       @default(100)
-  
-  // 状态
-  isActive        Boolean   @default(true)
-  isWhitelisted   Boolean   @default(false)
-  
-  // 时间戳
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // 关系
-  purchases       Purchase[]
-  whitelist       WhitelistEntry[]
-  
-  @@index([batchId])
-  @@index([productType])
-  @@map("presale_batches")
+  @@map("presales")
 }
 
+enum PresaleStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+// 购买记录表
 model Purchase {
-  id              String        @id @default(uuid())
+  id            String          @id @default(uuid())
+  presaleId     String
+  presale       Presale         @relation(fields: [presaleId], references: [id])
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  walletAddress String?
+  quantity      Int
+  unitPrice     Decimal
+  totalAmount   Decimal
+  currency      String
+  paymentMethod String
+  paymentId     String?
+  status        PurchaseStatus  @default(PENDING)
+  paidAt        DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   
-  // 购买信息
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  batchId         String
-  batch           PresaleBatch  @relation(fields: [batchId], references: [id])
-  
-  // 数量和价格
-  amount          Int
-  paidAmount      Decimal       @db.Decimal(20, 8)
-  currency        String
-  
-  // 支付信息
-  paymentMethod   String
-  transactionHash String?
-  paymentStatus   PaymentStatus @default(PENDING)
-  
-  // NFT关联
-  nftId           String?       @unique
-  nft             NFT?          @relation(fields: [nftId], references: [id])
-  
-  // 状态
-  status          PurchaseStatus @default(PENDING)
-  
-  // 时间戳
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  paidAt          DateTime?
-  
-  @@index([userId])
-  @@index([batchId])
   @@map("purchases")
+}
+
+enum PurchaseStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+// 白名单表
+model Whitelist {
+  id        String   @id @default(uuid())
+  presaleId String
+  presale   Presale  @relation(fields: [presaleId], references: [id])
+  address   String
+  createdAt DateTime @default(now())
+  
+  @@unique([presaleId, address])
+  @@map("whitelists")
+}
+
+// 溯源事件表
+model TraceEvent {
+  id          String       @id @default(uuid())
+  tokenId     Int
+  nft         NFT          @relation(fields: [tokenId], references: [tokenId])
+  eventType   String
+  description String
+  location    Json?
+  operator    String?
+  txHash      String?
+  metadata    Json?
+  timestamp   DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  media       TraceMedia[]
+  
+  @@map("trace_events")
+}
+
+// 溯源媒体表
+model TraceMedia {
+  id          String     @id @default(uuid())
+  eventId     String
+  event       TraceEvent @relation(fields: [eventId], references: [id])
+  type        String
+  url         String
+  description String?
+  createdAt   DateTime   @default(now())
+  
+  @@map("trace_media")
+}
+
+// KYC表
+model KYC {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  documentType     String
+  documentNumber   String
+  fullName         String
+  dateOfBirth      DateTime
+  nationality      String
+  documentFrontUrl String
+  documentBackUrl  String?
+  selfieUrl        String
+  status           KYCStatus @default(PENDING)
+  rejectedReason   String?
+  reviewerId       String?
+  reviewedAt       DateTime?
+  approvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  @@map("kyc_applications")
+}
+
+// AML检查表
+model AMLCheck {
+  id                  String   @id @default(uuid())
+  userId              String
+  transactionType     String
+  amount              Decimal
+  currency            String
+  walletAddress       String?
+  riskLevel           String
+  userRiskLevel       String
+  transactionRiskLevel String
+  walletRiskLevel     String?
+  passed              Boolean
+  checkedAt           DateTime @default(now())
+  
+  @@map("aml_checks")
+}
+
+// 通知表
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  content   String
+  data      Json?
+  status    String   @default("PENDING")
+  sentAt    DateTime?
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  
+  @@map("notifications")
+}
+
+// 通知模板表
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  type      String
+  subject   String
+  content   String
+  variables String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("notification_templates")
+}
+
+// 收货地址表
+model Address {
+  id          String  @id @default(uuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  name        String
+  phone       String
+  province    String
+  city        String
+  district    String
+  address     String
+  postalCode  String?
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  deliveryRequests DeliveryRequest[]
+  
+  @@map("addresses")
+}
+
+// 交付请求表
+model DeliveryRequest {
+  id              String          @id @default(uuid())
+  nftId           String
+  nft             NFT             @relation(fields: [nftId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  addressId       String
+  address         Address         @relation(fields: [addressId], references: [id])
+  status          DeliveryStatus  @default(PENDING)
+  trackingNumber  String?
+  carrier         String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("delivery_requests")
+}
+
+// 支付记录表
+model Payment {
+  id            String        @id @default(uuid())
+  orderId       String
+  orderType     String
+  amount        Decimal
+  currency      String
+  method        String
+  status        PaymentStatus @default(PENDING)
+  transactionId String?
+  metadata      Json?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@map("payments")
 }
 
 enum PaymentStatus {
@@ -203,164 +338,34 @@ enum PaymentStatus {
   REFUNDED
 }
 
-enum PurchaseStatus {
+// 退款记录表
+model Refund {
+  id          String       @id @default(uuid())
+  paymentId   String
+  amount      Decimal
+  reason      String
+  status      RefundStatus @default(PENDING)
+  processedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  @@map("refunds")
+}
+
+enum RefundStatus {
   PENDING
-  CONFIRMED
-  NFT_MINTED
-  DELIVERED
-  CANCELLED
+  APPROVED
+  REJECTED
+  COMPLETED
 }
 
-model WhitelistEntry {
-  id        String       @id @default(uuid())
-  batchId   String
-  batch     PresaleBatch @relation(fields: [batchId], references: [id])
-  address   String
-  maxAmount Int?
-  createdAt DateTime     @default(now())
+// 系统配置表
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   
-  @@unique([batchId, address])
-  @@map("whitelist_entries")
+  @@map("system_configs")
 }
-
-// ========================================
-// 订单模块
-// ========================================
-
-model Order {
-  id              String      @id @default(uuid())
-  orderNumber     String      @unique
-  
-  // 用户信息
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  
-  // 订单详情
-  items           Json
-  totalAmount     Decimal     @db.Decimal(20, 2)
-  currency        String
-  
-  // 配送信息
-  shippingAddress Json
-  trackingNumber  String?
-  
-  // 状态
-  status          OrderStatus @default(PENDING)
-  
-  // 时间戳
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  shippedAt       DateTime?
-  deliveredAt     DateTime?
-  
-  @@index([userId])
-  @@index([orderNumber])
-  @@map("orders")
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-// ========================================
-// 溯源模块
-// ========================================
-
-model TraceabilityRecord {
-  id          String   @id @default(uuid())
-  nftId       String
-  nft         NFT      @relation(fields: [nftId], references: [id])
-  
-  // 溯源信息
-  stage       String   // planting, growing, harvest, processing, packaging, shipping
-  description String
-  data        Json
-  location    String?
-  
-  // 验证
-  verifiedBy  String?
-  verified    Boolean  @default(false)
-  
-  // 时间戳
-  createdAt   DateTime @default(now())
-  recordedAt  DateTime @default(now())
-  
-  @@index([nftId])
-  @@index([stage])
-  @@map("traceability_records")
-}
-
-// ========================================
-// 国际化模块
-// ========================================
-
-model Translation {
-  id          String   @id @default(uuid())
-  key         String
-  languageCode String
-  content     String   @db.Text
-  category    String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@unique([key, languageCode])
-  @@index([languageCode])
-  @@map("translations")
-}
-
-model Currency {
-  code        String   @id // USD, CNY, ETH, etc.
-  name        String
-  symbol      String
-  type        CurrencyType
-  decimals    Int      @default(2)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("currencies")
-}
-
-enum CurrencyType {
-  FIAT
-  CRYPTO
-}
-
-model ExchangeRate {
-  id          String   @id @default(uuid())
-  fromCurrency String
-  toCurrency  String
-  rate        Decimal  @db.Decimal(20, 8)
-  source      String   // CoinGecko, CurrencyLayer, etc.
-  
-  createdAt   DateTime @default(now())
-  
-  @@index([fromCurrency, toCurrency])
-  @@map("exchange_rates")
-}
-
-// ========================================
-// 合规模块
-// ========================================
-
-model ComplianceLog {
-  id            String   @id @default(uuid())
-  userId        String?
-  action        String
-  details       Json
-  jurisdiction  String   // SG, CN, HK, etc.
-  severity      String   // INFO, WARNING, CRITICAL
-  
-  createdAt     DateTime @default(now())
-  
-  @@index([userId])
-  @@index([jurisdiction])
-  @@map("compliance_logs")
-} 

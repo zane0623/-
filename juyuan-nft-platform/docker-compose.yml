@@ -1,0 +1,247 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: juyuan-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-juyuan_nft}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - juyuan-network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: juyuan-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - juyuan-network
+
+  # 用户服务
+  user-service:
+    build:
+      context: ./backend/services/user
+      dockerfile: Dockerfile
+    container_name: juyuan-user-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    networks:
+      - juyuan-network
+
+  # NFT服务
+  nft-service:
+    build:
+      context: ./backend/services/nft
+      dockerfile: Dockerfile
+    container_name: juyuan-nft-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3002:3002"
+    networks:
+      - juyuan-network
+
+  # 预售服务
+  presale-service:
+    build:
+      context: ./backend/services/presale
+      dockerfile: Dockerfile
+    container_name: juyuan-presale-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3003:3003"
+    networks:
+      - juyuan-network
+
+  # 支付服务
+  payment-service:
+    build:
+      context: ./backend/services/payment
+      dockerfile: Dockerfile
+    container_name: juyuan-payment-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3004:3004"
+    networks:
+      - juyuan-network
+
+  # 溯源服务
+  traceability-service:
+    build:
+      context: ./backend/services/traceability
+      dockerfile: Dockerfile
+    container_name: juyuan-traceability-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3005:3005"
+    networks:
+      - juyuan-network
+
+  # 物流服务
+  logistics-service:
+    build:
+      context: ./backend/services/logistics
+      dockerfile: Dockerfile
+    container_name: juyuan-logistics-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3006:3006"
+    networks:
+      - juyuan-network
+
+  # 通知服务
+  notification-service:
+    build:
+      context: ./backend/services/notification
+      dockerfile: Dockerfile
+    container_name: juyuan-notification-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3008
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/juyuan_nft
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3008:3008"
+    networks:
+      - juyuan-network
+
+  # Web前端
+  web:
+    build:
+      context: ./frontend/web
+      dockerfile: Dockerfile
+    container_name: juyuan-web
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    networks:
+      - juyuan-network
+
+  # Admin管理后台
+  admin:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+    container_name: juyuan-admin
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3100:3000"
+    networks:
+      - juyuan-network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: juyuan-nginx
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+      - admin
+      - user-service
+      - nft-service
+    networks:
+      - juyuan-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  juyuan-network:
+    driver: bridge
+

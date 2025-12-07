@@ -58,7 +58,7 @@ describe("PresaleManager", function () {
 
       const presale = await presaleManager.getPresaleInfo(0);
       expect(presale.totalSupply).to.equal(1000);
-      expect(presale.price).to.equal(ethers.parseEther("0.1"));
+      expect(presale.priceInWei).to.equal(ethers.parseEther("0.1"));
       expect(presale.active).to.be.true;
     });
 
@@ -187,19 +187,32 @@ describe("PresaleManager", function () {
     });
 
     it("超过总供应量应该失败", async function () {
+      // 创建一个小供应量的预售用于测试超卖
+      const smallSupply = 50;
+      await presaleManager.createPresale(
+        startTime,
+        endTime,
+        1,
+        100,
+        smallSupply,  // 小供应量
+        price,
+        ethers.ZeroAddress,
+        false,
+        "测试产品"
+      );
+      const smallPresaleId = 1;
+
       await time.increaseTo(startTime + 10);
 
-      const amount = 100;
+      const amount = 30;
       const totalCost = price * BigInt(amount);
 
-      // 多个用户购买
-      await presaleManager.connect(buyer1).purchase(presaleId, amount, { value: totalCost });
-      await presaleManager.connect(buyer2).purchase(presaleId, amount, { value: totalCost });
-      await presaleManager.connect(buyer3).purchase(presaleId, amount, { value: totalCost });
-      
-      // 前三个用户已购买300个，第四个购买应该部分失败
+      // 买家1购买30个
+      await presaleManager.connect(buyer1).purchase(smallPresaleId, amount, { value: totalCost });
+
+      // 买家2尝试购买30个应该失败（只剩20个）
       await expect(
-        presaleManager.connect(buyer1).purchase(presaleId, amount, { value: totalCost })
+        presaleManager.connect(buyer2).purchase(smallPresaleId, amount, { value: totalCost })
       ).to.be.revertedWith("Exceeds total supply");
     });
 
@@ -224,12 +237,12 @@ describe("PresaleManager", function () {
       const overpayment = totalCost + ethers.parseEther("1");
 
       const initialBalance = await ethers.provider.getBalance(buyer1.address);
-      
+
       const tx = await presaleManager.connect(buyer1).purchase(presaleId, amount, {
         value: overpayment,
       });
       const receipt = await tx.wait();
-      
+
       const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
       const finalBalance = await ethers.provider.getBalance(buyer1.address);
 
@@ -338,15 +351,15 @@ describe("PresaleManager", function () {
     it("预售失败时应该能够退款", async function () {
       // 结束预售
       await time.increaseTo(endTime + 10);
-      
+
       // 设置预售为非激活状态（模拟失败）
       await presaleManager.setPresaleStatus(presaleId, false);
 
       const initialBalance = await ethers.provider.getBalance(buyer1.address);
-      
+
       const tx = await presaleManager.connect(buyer1).refund(presaleId);
       const receipt = await tx.wait();
-      
+
       const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
       const finalBalance = await ethers.provider.getBalance(buyer1.address);
 
@@ -391,7 +404,7 @@ describe("PresaleManager", function () {
       const initialBalance = await ethers.provider.getBalance(owner.address);
       const tx = await presaleManager.withdraw(ethers.ZeroAddress);
       const receipt = await tx.wait();
-      
+
       const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
       const finalBalance = await ethers.provider.getBalance(owner.address);
 

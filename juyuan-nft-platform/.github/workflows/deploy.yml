@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name juyuan-${{ github.event.inputs.environment }} --region ap-southeast-1
+
+      - name: Deploy services
+        run: |
+          kubectl apply -f deployment/kubernetes/ -n juyuan-${{ github.event.inputs.environment }}
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/user-service -n juyuan-${{ github.event.inputs.environment }}
+          kubectl rollout status deployment/nft-service -n juyuan-${{ github.event.inputs.environment }}
+          kubectl rollout status deployment/web -n juyuan-${{ github.event.inputs.environment }}
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://api.${{ github.event.inputs.environment }}.juyuan-nft.com/health || exit 1
+
+      - name: Notify success
+        if: success()
+        run: |
+          echo "✅ Deployment to ${{ github.event.inputs.environment }} successful!"
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to ${{ github.event.inputs.environment }} failed!"
+

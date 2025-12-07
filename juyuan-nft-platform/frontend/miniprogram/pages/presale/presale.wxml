@@ -1,0 +1,62 @@
+<!-- 预售市场 -->
+<view class="page">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-item {{currentStatus === '' ? 'active' : ''}}" bindtap="filterByStatus" data-status="">全部</view>
+    <view class="filter-item {{currentStatus === 'UPCOMING' ? 'active' : ''}}" bindtap="filterByStatus" data-status="UPCOMING">即将开售</view>
+    <view class="filter-item {{currentStatus === 'ACTIVE' ? 'active' : ''}}" bindtap="filterByStatus" data-status="ACTIVE">预售中</view>
+    <view class="filter-item {{currentStatus === 'ENDED' ? 'active' : ''}}" bindtap="filterByStatus" data-status="ENDED">已结束</view>
+  </view>
+
+  <!-- 预售列表 -->
+  <scroll-view scroll-y class="presale-scroll" bindscrolltolower="loadMore">
+    <view class="presale-grid">
+      <view class="presale-item" wx:for="{{presales}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="item-image-wrap">
+          <image src="{{item.image || '/assets/images/default-product.jpg'}}" mode="aspectFill" class="item-image" />
+          <view class="item-tag tag-{{item.statusClass}}">{{item.statusText}}</view>
+        </view>
+        <view class="item-content">
+          <text class="item-name">{{item.productType}}</text>
+          <text class="item-origin">📍 {{item.originBase}}</text>
+          <text class="item-date">🗓️ 采收: {{item.harvestDate}}</text>
+          
+          <view class="item-progress">
+            <view class="progress-info">
+              <text>已售 {{item.currentSupply}}/{{item.maxSupply}}</text>
+              <text class="progress-percent">{{item.soldPercent}}%</text>
+            </view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.soldPercent}}%"></view>
+            </view>
+          </view>
+          
+          <view class="item-footer">
+            <view class="item-price">
+              <text class="price-symbol">¥</text>
+              <text class="price-value">{{item.price}}</text>
+            </view>
+            <view class="item-btn {{item.status !== 'ACTIVE' ? 'disabled' : ''}}">
+              {{item.status === 'ACTIVE' ? '立即购买' : (item.status === 'UPCOMING' ? '即将开售' : '已结束')}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && presales.length === 0}}">
+      <image src="/assets/images/empty.png" />
+      <text>暂无预售活动</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="load-more" wx:if="{{!loading && !hasMore && presales.length > 0}}">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+</view>
+

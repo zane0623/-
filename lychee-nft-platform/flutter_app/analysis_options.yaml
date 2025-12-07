@@ -1,0 +1,160 @@
+# Dart代码分析配置
+# 
+# 本配置文件定义了项目的代码风格和质量标准
+# 更多信息：https://dart.dev/guides/language/analysis-options
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # 强制执行的错误级别
+  errors:
+    # 警告视为错误（在CI/CD中建议启用）
+    # invalid_annotation_target: ignore
+    
+    # 忽略生成的文件
+    invalid_annotation_target: ignore
+    
+    # 允许在非生产代码中使用print
+    avoid_print: ignore
+    
+    # 允许TODO注释
+    todo: ignore
+
+  # 排除分析的文件/目录
+  exclude:
+    - "**/*.g.dart"          # json_serializable生成的文件
+    - "**/*.freezed.dart"    # freezed生成的文件
+    - "**/generated_plugin_registrant.dart"
+    - "build/**"
+    - "lib/generated/**"
+    - ".dart_tool/**"
+    - "ios/**"
+    - "android/**"
+    - "macos/**"
+    - "windows/**"
+    - "linux/**"
+    - "web/**"
+
+# Lint规则配置
+linter:
+  rules:
+    # ========== 错误预防 ==========
+    # 避免空语句
+    avoid_empty_else: true
+    # 避免在finally中返回
+    control_flow_in_finally: true
+    # 避免返回null的函数标记为非空
+    # avoid_returning_null_for_future: true  # 已在Dart 3.3.0中移除
+    # 避免慢速的异步操作
+    avoid_slow_async_io: true
+    # 总是在switch case中break或return
+    no_duplicate_case_values: true
+
+    # ========== 代码风格 ==========
+    # 使用单引号
+    prefer_single_quotes: true
+    # 优先使用const构造函数
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    # 使用相对导入
+    prefer_relative_imports: true
+    # 使用驼峰命名
+    camel_case_types: true
+    camel_case_extensions: true
+    # 文件名使用小写+下划线
+    file_names: true
+    # 库名使用小写+下划线
+    library_names: true
+    library_prefixes: true
+
+    # ========== 文档注释 ==========
+    # 公共API需要注释
+    # public_member_api_docs: true  # 可选，根据项目需求启用
+
+    # ========== 类型注解 ==========
+    # 总是声明返回类型
+    always_declare_return_types: true
+    # 避免类型注解用于可推断的变量
+    omit_local_variable_types: true
+    # 避免在动态调用上使用as
+    avoid_as: false
+
+    # ========== 集合 ==========
+    # 优先使用集合字面量
+    prefer_collection_literals: true
+    # 优先使用isEmpty/isNotEmpty
+    prefer_is_empty: true
+    prefer_is_not_empty: true
+    # 优先使用spread操作符
+    prefer_spread_collections: true
+    # 避免在集合操作中使用不必要的迭代
+    prefer_iterable_whereType: true
+
+    # ========== 函数 ==========
+    # 优先使用函数声明
+    prefer_function_declarations_over_variables: true
+    # 使用=>简化单行函数
+    prefer_expression_function_bodies: false  # 个人偏好，可选
+    # 避免不必要的空函数
+    # avoid_returning_null: false  # 已在Dart 3.3.0中移除
+    # 避免返回this以支持链式调用
+    avoid_returning_this: false
+
+    # ========== 字符串 ==========
+    # 优先使用插值
+    prefer_interpolation_to_compose_strings: true
+    # 优先使用字符串缓冲区
+    use_string_buffers: true
+    # 避免不必要的字符串转义
+    unnecessary_string_escapes: true
+
+    # ========== 布尔 ==========
+    # 避免bool字面量在条件表达式中
+    avoid_bool_literals_in_conditional_expressions: true
+
+    # ========== 构造函数 ==========
+    # 优先使用初始化列表
+    prefer_initializing_formals: true
+    # 优先使用构造函数简写
+    prefer_constructors_over_static_methods: false
+
+    # ========== Null安全 ==========
+    # 避免null检查类型注解
+    avoid_null_checks_in_equality_operators: true
+    # 使用if-null操作符
+    prefer_if_null_operators: true
+    # 使用??=
+    prefer_null_aware_operators: true
+
+    # ========== 测试 ==========
+    # 使用test.expect而不是expect
+    use_test_throws_matchers: false
+
+    # ========== 其他最佳实践 ==========
+    # 避免Web库在Flutter中使用
+    avoid_web_libraries_in_flutter: true
+    # 避免不必要的容器
+    avoid_unnecessary_containers: true
+    # 使用super参数
+    use_super_parameters: true
+    # 优先使用泛型函数类型别名
+    prefer_generic_function_type_aliases: true
+    # 大小写敏感的扩展
+    use_colored_box: true
+    # 避免多余的花括号
+    unnecessary_brace_in_string_interps: true
+    # 排序构造函数在第一位
+    sort_constructors_first: true
+    # 避免final类型在参数中
+    avoid_types_on_closure_parameters: true
+    # 使用raw字符串避免转义
+    use_raw_strings: true
+    # 使用rethrow重新抛出异常
+    use_rethrow_when_possible: true
+
+# 忽略特定的lint规则（根据项目需求调整）
+# linter:
+#   rules:
+#     - rule_name: false  # 禁用某个规则

@@ -1,0 +1,107 @@
+<!-- 首页 -->
+<view class="page">
+  <!-- 顶部横幅 -->
+  <swiper class="banner" indicator-dots autoplay circular>
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <image src="{{item.image}}" mode="aspectFill" class="banner-image" bindtap="onBannerTap" data-url="{{item.url}}" />
+    </swiper-item>
+  </swiper>
+
+  <!-- 功能入口 -->
+  <view class="feature-grid">
+    <view class="feature-item" bindtap="navigateTo" data-url="/pages/presale/presale">
+      <view class="feature-icon bg-green">
+        <image src="/assets/icons/presale.png" />
+      </view>
+      <text>预售市场</text>
+    </view>
+    <view class="feature-item" bindtap="navigateTo" data-url="/pages/my-nfts/my-nfts">
+      <view class="feature-icon bg-blue">
+        <image src="/assets/icons/my-nft.png" />
+      </view>
+      <text>我的NFT</text>
+    </view>
+    <view class="feature-item" bindtap="navigateTo" data-url="/pages/trace/trace">
+      <view class="feature-icon bg-orange">
+        <image src="/assets/icons/trace.png" />
+      </view>
+      <text>溯源查询</text>
+    </view>
+    <view class="feature-item" bindtap="scanQRCode">
+      <view class="feature-icon bg-purple">
+        <image src="/assets/icons/scan.png" />
+      </view>
+      <text>扫码溯源</text>
+    </view>
+  </view>
+
+  <!-- 热门预售 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">热门预售</text>
+      <text class="section-more" bindtap="navigateTo" data-url="/pages/presale/presale">查看更多</text>
+    </view>
+    
+    <view class="presale-list">
+      <view class="presale-card" wx:for="{{hotPresales}}" wx:key="id" bindtap="goPresaleDetail" data-id="{{item.id}}">
+        <image src="{{item.image}}" mode="aspectFill" class="presale-image" />
+        <view class="presale-info">
+          <text class="presale-name">{{item.productType}}</text>
+          <text class="presale-origin">{{item.originBase}}</text>
+          <view class="presale-bottom">
+            <view class="presale-price">
+              <text class="price-value">¥{{item.price}}</text>
+              <text class="price-unit">/份</text>
+            </view>
+            <view class="presale-progress">
+              <text>{{item.soldPercent}}%</text>
+            </view>
+          </view>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{item.soldPercent}}%"></view>
+          </view>
+        </view>
+        <view class="presale-tag tag-{{item.statusClass}}">{{item.statusText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 溯源说明 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">区块链溯源</text>
+    </view>
+    
+    <view class="trace-intro card">
+      <view class="trace-step">
+        <view class="step-icon">1</view>
+        <view class="step-content">
+          <text class="step-title">种植记录</text>
+          <text class="step-desc">记录种子来源、种植时间、土壤信息</text>
+        </view>
+      </view>
+      <view class="trace-step">
+        <view class="step-icon">2</view>
+        <view class="step-content">
+          <text class="step-title">生长监控</text>
+          <text class="step-desc">实时监测生长环境、施肥用药记录</text>
+        </view>
+      </view>
+      <view class="trace-step">
+        <view class="step-icon">3</view>
+        <view class="step-content">
+          <text class="step-title">采收检测</text>
+          <text class="step-desc">采收时间、质量检测报告</text>
+        </view>
+      </view>
+      <view class="trace-step">
+        <view class="step-icon">4</view>
+        <view class="step-content">
+          <text class="step-title">物流追踪</text>
+          <text class="step-desc">全程冷链运输、实时位置追踪</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
