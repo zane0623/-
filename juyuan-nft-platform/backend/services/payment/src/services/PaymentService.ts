@@ -6,7 +6,7 @@ import axios from 'axios';
 const prisma = new PrismaClient();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16'
+  apiVersion: '2022-11-15'
 });
 
 interface CreateStripePaymentParams {
@@ -114,7 +114,6 @@ export class PaymentService {
 
     return {
       paymentId: payment.id,
-      outTradeNo,
       ...wechatOrder
     };
   }
@@ -151,7 +150,6 @@ export class PaymentService {
 
     return {
       paymentId: payment.id,
-      outTradeNo,
       ...alipayOrder
     };
   }

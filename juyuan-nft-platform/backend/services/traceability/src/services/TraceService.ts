@@ -49,7 +49,7 @@ export class TraceService {
         originBase: nft.originBase,
         ipfsHash: nft.ipfsHash
       },
-      events: events.map(e => ({
+      events: events.map((e: any) => ({
         id: e.id,
         eventType: e.eventType,
         description: e.description,
@@ -85,7 +85,7 @@ export class TraceService {
       }
     });
 
-    return events.map((event, index) => ({
+    return events.map((event: any, index: number) => ({
       ...event,
       step: index + 1,
       completed: true
@@ -159,7 +159,7 @@ export class TraceService {
     });
 
     const traces = await Promise.all(
-      nfts.map(nft => this.getFullTrace(nft.tokenId!))
+      nfts.map((nft: { tokenId: number | null }) => this.getFullTrace(nft.tokenId!))
     );
 
     return traces.filter(t => t !== null);

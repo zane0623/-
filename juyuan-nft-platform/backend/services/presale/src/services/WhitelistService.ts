@@ -18,7 +18,7 @@ export class WhitelistService {
       select: { address: true }
     });
 
-    const existingAddresses = new Set(existing.map(e => e.address));
+    const existingAddresses = new Set(existing.map((e: { address: string }) => e.address));
     const newAddresses = normalizedAddresses.filter(addr => !existingAddresses.has(addr));
 
     // 批量创建
@@ -74,7 +74,7 @@ export class WhitelistService {
     ]);
 
     return {
-      addresses: whitelist.map(w => w.address),
+      addresses: whitelist.map((w: { address: string }) => w.address),
       total
     };
   }

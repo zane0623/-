@@ -1,24 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
-    domains: ['gateway.pinata.cloud', 'ipfs.io', 'example.com'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.ipfs.dweb.link',
+        hostname: '**',
       },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
-    NEXT_PUBLIC_NFT_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS,
-    NEXT_PUBLIC_PRESALE_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_PRESALE_CONTRACT_ADDRESS,
-    NEXT_PUBLIC_ESCROW_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_ESCROW_CONTRACT_ADDRESS,
+  // 优化构建
+  swcMinify: true,
+  // 编译器选项
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Webpack 配置
+  webpack: (config) => {
+    config.resolve.fallback = { fs: false, net: false, tls: false };
+    config.externals.push('pino-pretty', 'lokijs', 'encoding');
+    return config;
   },
 };
 
 module.exports = nextConfig;
-
-

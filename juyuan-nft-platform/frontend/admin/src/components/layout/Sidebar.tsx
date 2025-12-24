@@ -23,6 +23,7 @@ import { clsx } from 'clsx';
 
 const menuItems = [
   { name: '仪表盘', href: '/', icon: LayoutDashboard, color: 'text-emerald-400' },
+  { name: '订单管理', href: '/orders', icon: ShoppingCart, color: 'text-orange-400' },
   { name: '用户管理', href: '/users', icon: Users, color: 'text-blue-400' },
   { name: 'NFT管理', href: '/nfts', icon: Package, color: 'text-violet-400' },
   { name: '预售管理', href: '/presales', icon: ShoppingCart, color: 'text-amber-400' },

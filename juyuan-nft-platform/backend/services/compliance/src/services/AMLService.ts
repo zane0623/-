@@ -180,11 +180,11 @@ export class AMLService {
 
     const summary = {
       total: reports.length,
-      highRisk: reports.filter(r => r.riskLevel === 'HIGH').length,
-      mediumRisk: reports.filter(r => r.riskLevel === 'MEDIUM').length,
-      lowRisk: reports.filter(r => r.riskLevel === 'LOW').length,
-      passed: reports.filter(r => r.passed).length,
-      failed: reports.filter(r => !r.passed).length
+      highRisk: reports.filter((r: any) => r.riskLevel === 'HIGH').length,
+      mediumRisk: reports.filter((r: any) => r.riskLevel === 'MEDIUM').length,
+      lowRisk: reports.filter((r: any) => r.riskLevel === 'LOW').length,
+      passed: reports.filter((r: any) => r.passed).length,
+      failed: reports.filter((r: any) => !r.passed).length
     };
 
     return { reports, summary };

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Menu, X, ShoppingCart, Leaf, Sparkles } from 'lucide-react';
 
@@ -120,10 +121,12 @@ export function Header() {
                               className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
                             >
                               {chain.hasIcon && chain.iconUrl && (
-                                <img
+                                <Image
                                   alt={chain.name ?? 'Chain icon'}
                                   src={chain.iconUrl}
-                                  className="w-4 h-4 inline mr-2"
+                                  width={16}
+                                  height={16}
+                                  className="inline mr-2"
                                 />
                               )}
                               {chain.name}

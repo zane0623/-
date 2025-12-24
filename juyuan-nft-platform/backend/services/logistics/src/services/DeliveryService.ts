@@ -226,7 +226,7 @@ export class DeliveryService {
     });
 
     const avgDeliveryTime = deliveries.length > 0
-      ? deliveries.reduce((sum, d) => {
+      ? deliveries.reduce((sum: number, d: { deliveredAt: Date | null; shippedAt: Date | null }) => {
           const time = d.deliveredAt!.getTime() - d.shippedAt!.getTime();
           return sum + time;
         }, 0) / deliveries.length / (1000 * 60 * 60 * 24) // 转换为天

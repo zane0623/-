@@ -158,7 +158,7 @@ export class NotificationService {
       select: { id: true }
     });
 
-    const userIds = users.map(u => u.id);
+    const userIds = users.map((u: { id: string }) => u.id);
     return await this.sendBatch(userIds, params);
   }
 

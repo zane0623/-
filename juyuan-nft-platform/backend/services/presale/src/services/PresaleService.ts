@@ -193,7 +193,7 @@ export class PresaleService {
     const totalAmount = presale.price * quantity;
 
     // 创建购买记录
-    const purchase = await prisma.$transaction(async (tx) => {
+    const purchase = await prisma.$transaction(async (tx: any) => {
       // 创建购买记录
       const newPurchase = await tx.purchase.create({
         data: {

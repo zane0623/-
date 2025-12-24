@@ -128,7 +128,7 @@ export class EventService {
       _count: true
     });
 
-    return events.map(e => ({
+    return events.map((e: { eventType: string; _count: number }) => ({
       eventType: e.eventType,
       count: e._count
     }));
