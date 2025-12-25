@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Clock, MapPin, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Clock, MapPin, Sparkles, ShoppingCart, Plus, Check } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
 
 const products = [
   {
-    id: 1,
+    id: '1',
     name: '阳光玫瑰葡萄',
     origin: '云南大理',
     price: 299,
@@ -18,7 +22,7 @@ const products = [
     grade: '特级'
   },
   {
-    id: 2,
+    id: '2',
     name: '赣南脐橙',
     origin: '江西赣州',
     price: 199,
@@ -31,7 +35,7 @@ const products = [
     grade: '优级'
   },
   {
-    id: 3,
+    id: '3',
     name: '五常大米',
     origin: '黑龙江五常',
     price: 499,
@@ -44,7 +48,7 @@ const products = [
     grade: '特级'
   },
   {
-    id: 4,
+    id: '4',
     name: '烟台红富士',
     origin: '山东烟台',
     price: 259,
@@ -59,6 +63,11 @@ const products = [
 ];
 
 export function FeaturedProducts() {
+  const router = useRouter();
+  const { addItem, items } = useCart();
+  const toast = useToast();
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, { bg: string; text: string; label: string }> = {
       active: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: '预售中' },
@@ -71,6 +80,46 @@ export function FeaturedProducts() {
         {style.label}
       </span>
     );
+  };
+
+  const handleAddToCart = (product: typeof products[0]) => {
+    // 检查是否已在购物车
+    const existingItem = items.find(i => i.productId === product.id);
+    if (existingItem && existingItem.quantity >= 10) {
+      toast.warning('已达到限购数量', '每人限购10份');
+      return;
+    }
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: `/products/${product.id}.jpg`,
+      icon: product.image,
+      origin: product.origin,
+      maxQuantity: 10,
+    });
+
+    setAddedItems(prev => new Set(prev).add(product.id));
+    toast.success('已加入购物车', product.name);
+
+    // 2秒后移除动画状态
+    setTimeout(() => {
+      setAddedItems(prev => {
+        const next = new Set(prev);
+        next.delete(product.id);
+        return next;
+      });
+    }, 2000);
+  };
+
+  const handleBuyNow = (product: typeof products[0]) => {
+    // 添加到购物车并跳转
+    handleAddToCart(product);
+    setTimeout(() => {
+      router.push('/cart');
+    }, 500);
   };
 
   return (
@@ -105,86 +154,123 @@ export function FeaturedProducts() {
 
         {/* 产品网格 */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
-              className="group relative bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-2"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              {/* 产品图片区域 */}
-              <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
-                <span className="text-8xl group-hover:scale-125 transition-transform duration-500">
-                  {product.image}
-                </span>
-                
-                {/* 状态标签 */}
-                <div className="absolute top-4 left-4">
-                  {getStatusBadge(product.status)}
-                </div>
-                
-                {/* 品质标签 */}
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 bg-amber-500/20 rounded-full">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                  <span className="text-xs text-amber-400 font-medium">{product.grade}</span>
-                </div>
-
-                {/* 悬浮遮罩 */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60" />
-              </div>
-
-              {/* 产品信息 */}
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
-                  {product.name}
-                </h3>
-                
-                <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {product.origin}
+          {products.map((product, index) => {
+            const isAdded = addedItems.has(product.id);
+            
+            return (
+              <div
+                key={product.id}
+                className="group relative bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-2"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                {/* 产品图片区域 */}
+                <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
+                  <span className="text-8xl group-hover:scale-125 transition-transform duration-500">
+                    {product.image}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {product.harvestDate}
-                  </span>
+                  
+                  {/* 状态标签 */}
+                  <div className="absolute top-4 left-4">
+                    {getStatusBadge(product.status)}
+                  </div>
+                  
+                  {/* 品质标签 */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 bg-amber-500/20 rounded-full">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span className="text-xs text-amber-400 font-medium">{product.grade}</span>
+                  </div>
+
+                  {/* 悬浮遮罩 */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60" />
+                  
+                  {/* 快速操作按钮 - 悬浮时显示 */}
+                  {product.status === 'active' && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="p-3 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors"
+                        title="加入购物车"
+                      >
+                        {isAdded ? (
+                          <Check className="w-5 h-5 text-emerald-400" />
+                        ) : (
+                          <Plus className="w-5 h-5 text-white" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleBuyNow(product)}
+                        className="p-3 bg-emerald-500/80 backdrop-blur-sm rounded-xl hover:bg-emerald-500 transition-colors"
+                        title="立即购买"
+                      >
+                        <ShoppingCart className="w-5 h-5 text-white" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* 进度条 */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-slate-500">销售进度</span>
-                    <span className="text-emerald-400 font-medium">
-                      {Math.round((product.sold / product.total) * 100)}%
+                {/* 产品信息 */}
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
+                    {product.name}
+                  </h3>
+                  
+                  <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {product.origin}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {product.harvestDate}
                     </span>
                   </div>
-                  <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
-                      style={{ width: `${(product.sold / product.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
 
-                {/* 价格和按钮 */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
-                  <div>
-                    <span className="text-2xl font-bold text-emerald-400">¥{product.price}</span>
-                    <span className="text-sm text-slate-500 line-through ml-2">¥{product.originalPrice}</span>
+                  {/* 进度条 */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-slate-500">销售进度</span>
+                      <span className="text-emerald-400 font-medium">
+                        {Math.round((product.sold / product.total) * 100)}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
+                        style={{ width: `${(product.sold / product.total) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <button
-                    disabled={product.status !== 'active'}
-                    className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                      product.status === 'active'
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105'
-                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {product.status === 'active' ? '立即购买' : product.status === 'upcoming' ? '即将开售' : '已售罄'}
-                  </button>
+
+                  {/* 价格和按钮 */}
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                    <div>
+                      <span className="text-2xl font-bold text-emerald-400">¥{product.price}</span>
+                      <span className="text-sm text-slate-500 line-through ml-2">¥{product.originalPrice}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (product.status === 'active') {
+                          handleBuyNow(product);
+                        } else if (product.status === 'upcoming') {
+                          toast.info('即将开售', '请关注开售时间');
+                        }
+                      }}
+                      disabled={product.status === 'soldout'}
+                      className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                        product.status === 'active'
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105'
+                          : product.status === 'upcoming'
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer'
+                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {product.status === 'active' ? '立即购买' : product.status === 'upcoming' ? '即将开售' : '已售罄'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

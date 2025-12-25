@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import AdminHeader from '@/components/layout/Header';
+import Modal from '@/components/ui/Modal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { ToastContainer, showToast } from '@/components/ui/Toast';
 import { 
   Truck, 
   Package, 
@@ -16,7 +19,9 @@ import {
   Eye,
   Phone,
   Navigation,
-  RefreshCw
+  RefreshCw,
+  Copy,
+  MessageSquare
 } from 'lucide-react';
 
 interface Delivery {
@@ -129,10 +134,71 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 };
 
 export default function DeliveriesPage() {
+  const [allDeliveries, setAllDeliveries] = useState<Delivery[]>(deliveries);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [detailDelivery, setDetailDelivery] = useState<Delivery | null>(null);
+  const [trackingDelivery, setTrackingDelivery] = useState<Delivery | null>(null);
+  const [redeliveryConfirm, setRedeliveryConfirm] = useState<Delivery | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const filteredDeliveries = deliveries.filter(d => {
+  // 刷新状态
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsRefreshing(false);
+    showToast.success('刷新成功', '物流状态已更新');
+  };
+
+  // 批量发货
+  const handleBatchShip = () => {
+    const preparingCount = allDeliveries.filter(d => d.status === 'preparing').length;
+    if (preparingCount === 0) {
+      showToast.info('没有待发货的订单');
+      return;
+    }
+    showToast.info('批量发货', `共有 ${preparingCount} 个订单待发货`);
+  };
+
+  // 复制单号
+  const handleCopy = async (text: string, label: string) => {
+    await navigator.clipboard.writeText(text);
+    showToast.success('复制成功', `${label}已复制到剪贴板`);
+  };
+
+  // 重新派送
+  const handleRedelivery = async () => {
+    if (!redeliveryConfirm) return;
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setAllDeliveries(prev => prev.map(d => 
+      d.id === redeliveryConfirm.id 
+        ? { ...d, status: 'out_for_delivery' as const, estimatedTime: '明天 14:00-16:00' } 
+        : d
+    ));
+    
+    showToast.success('已安排重新派送', `订单 ${redeliveryConfirm.orderNo}`);
+    setRedeliveryConfirm(null);
+    setIsLoading(false);
+  };
+
+  // 联系快递员
+  const handleContactCourier = (delivery: Delivery) => {
+    if (delivery.courier.phone === '-') {
+      showToast.warning('暂无快递员信息');
+      return;
+    }
+    showToast.info('拨打电话', delivery.courier.phone);
+  };
+
+  // 联系收件人
+  const handleContactRecipient = (delivery: Delivery) => {
+    showToast.info('拨打电话', delivery.recipient.phone);
+  };
+
+  const filteredDeliveries = allDeliveries.filter(d => {
     if (selectedStatus !== 'all' && d.status !== selectedStatus) return false;
     if (searchQuery && 
         !d.orderNo.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -141,12 +207,12 @@ export default function DeliveriesPage() {
   });
 
   const stats = [
-    { label: '全部', value: deliveries.length, key: 'all' },
-    { label: '备货中', value: deliveries.filter(d => d.status === 'preparing').length, key: 'preparing' },
-    { label: '运输中', value: deliveries.filter(d => ['picked', 'in_transit'].includes(d.status)).length, key: 'in_transit' },
-    { label: '派送中', value: deliveries.filter(d => d.status === 'out_for_delivery').length, key: 'out_for_delivery' },
-    { label: '已完成', value: deliveries.filter(d => d.status === 'delivered').length, key: 'delivered' },
-    { label: '异常', value: deliveries.filter(d => d.status === 'failed').length, key: 'failed' },
+    { label: '全部', value: allDeliveries.length, key: 'all' },
+    { label: '备货中', value: allDeliveries.filter(d => d.status === 'preparing').length, key: 'preparing' },
+    { label: '运输中', value: allDeliveries.filter(d => ['picked', 'in_transit'].includes(d.status)).length, key: 'in_transit' },
+    { label: '派送中', value: allDeliveries.filter(d => d.status === 'out_for_delivery').length, key: 'out_for_delivery' },
+    { label: '已完成', value: allDeliveries.filter(d => d.status === 'delivered').length, key: 'delivered' },
+    { label: '异常', value: allDeliveries.filter(d => d.status === 'failed').length, key: 'failed' },
   ];
 
   return (
@@ -154,6 +220,7 @@ export default function DeliveriesPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />
+        <ToastContainer />
         <main className="flex-1 overflow-auto p-6">
           {/* 页面标题 */}
           <div className="flex justify-between items-center mb-6">
@@ -162,11 +229,18 @@ export default function DeliveriesPage() {
               <p className="text-gray-500 mt-1">跟踪和管理所有配送订单</p>
             </div>
             <div className="flex gap-3">
-              <button className="btn-secondary btn-sm flex items-center gap-2">
-                <RefreshCw className="w-4 h-4" />
+              <button 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="btn-secondary btn-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 刷新状态
               </button>
-              <button className="btn-primary btn-sm">
+              <button 
+                onClick={handleBatchShip}
+                className="btn-primary btn-sm"
+              >
                 批量发货
               </button>
             </div>
@@ -291,14 +365,26 @@ export default function DeliveriesPage() {
                         {status.label}
                       </span>
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="查看详情">
+                        <button 
+                          onClick={() => setDetailDelivery(delivery)}
+                          className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" 
+                          title="查看详情"
+                        >
                           <Eye className="w-5 h-5" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="物流轨迹">
+                        <button 
+                          onClick={() => setTrackingDelivery(delivery)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="物流轨迹"
+                        >
                           <Navigation className="w-5 h-5" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                          <MoreHorizontal className="w-5 h-5" />
+                        <button 
+                          onClick={() => handleContactCourier(delivery)}
+                          className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
+                          title="联系快递员"
+                        >
+                          <Phone className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
@@ -347,7 +433,10 @@ export default function DeliveriesPage() {
                         <div>
                           <p className="font-medium text-red-700">派送失败</p>
                           <p className="text-sm text-red-600 mt-1">收件人电话无法接通，已安排二次配送</p>
-                          <button className="mt-2 text-sm text-red-600 hover:text-red-700 font-medium">
+                          <button 
+                            onClick={() => setRedeliveryConfirm(delivery)}
+                            className="mt-2 text-sm text-red-600 hover:text-red-700 font-medium"
+                          >
                             重新派送 →
                           </button>
                         </div>
@@ -369,6 +458,157 @@ export default function DeliveriesPage() {
           )}
         </main>
       </div>
+
+      {/* 配送详情弹窗 */}
+      <Modal
+        isOpen={!!detailDelivery}
+        onClose={() => setDetailDelivery(null)}
+        title="配送详情"
+        size="lg"
+      >
+        {detailDelivery && (
+          <div className="space-y-6">
+            {/* 产品信息 */}
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+              <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center text-4xl shadow-sm">
+                {detailDelivery.product.icon}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">{detailDelivery.product.name}</h3>
+                <p className="text-gray-500">×{detailDelivery.product.quantity}</p>
+                <p className="text-emerald-600 font-mono text-sm mt-1">{detailDelivery.orderNo}</p>
+              </div>
+            </div>
+
+            {/* 物流信息 */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-900">物流信息</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500 mb-1">快递公司</p>
+                  <p className="font-medium">{detailDelivery.courier.company}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500 mb-1">快递单号</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-medium">{detailDelivery.trackingNo}</p>
+                    <button 
+                      onClick={() => handleCopy(detailDelivery.trackingNo, '快递单号')}
+                      className="p-1 hover:bg-gray-200 rounded"
+                    >
+                      <Copy className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500 mb-1">快递员</p>
+                  <p className="font-medium">{detailDelivery.courier.name}</p>
+                  <p className="text-sm text-gray-500">{detailDelivery.courier.phone}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500 mb-1">预计送达</p>
+                  <p className="font-medium">{detailDelivery.estimatedTime}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 收件人信息 */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-900">收件人信息</h4>
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="font-medium">{detailDelivery.recipient.name} · {detailDelivery.recipient.phone}</p>
+                    <p className="text-gray-500 mt-1">{detailDelivery.recipient.address}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="flex gap-3 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  handleContactCourier(detailDelivery);
+                  setDetailDelivery(null);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                <Phone className="w-5 h-5" />
+                联系快递员
+              </button>
+              <button
+                onClick={() => {
+                  handleContactRecipient(detailDelivery);
+                  setDetailDelivery(null);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors"
+              >
+                <MessageSquare className="w-5 h-5" />
+                联系收件人
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* 物流轨迹弹窗 */}
+      <Modal
+        isOpen={!!trackingDelivery}
+        onClose={() => setTrackingDelivery(null)}
+        title="物流轨迹"
+        size="md"
+      >
+        {trackingDelivery && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+              <span className="text-3xl">{trackingDelivery.product.icon}</span>
+              <div>
+                <p className="font-bold">{trackingDelivery.product.name}</p>
+                <p className="text-sm text-gray-500">{trackingDelivery.trackingNo}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { time: '2024-01-15 13:30', desc: '快递员正在派送中', status: 'current' },
+                { time: '2024-01-15 09:00', desc: '已到达上海转运中心', status: 'done' },
+                { time: '2024-01-14 20:00', desc: '已从云南大理发出', status: 'done' },
+                { time: '2024-01-14 15:00', desc: '商家已发货', status: 'done' },
+                { time: '2024-01-14 09:00', desc: '订单已创建', status: 'done' },
+              ].map((item, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-3 h-3 rounded-full ${
+                      item.status === 'current' ? 'bg-emerald-500 ring-4 ring-emerald-100' : 'bg-gray-300'
+                    }`} />
+                    {index < 4 && <div className="w-0.5 h-8 bg-gray-200" />}
+                  </div>
+                  <div>
+                    <p className={`font-medium ${item.status === 'current' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                      {item.desc}
+                    </p>
+                    <p className="text-sm text-gray-500">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* 重新派送确认 */}
+      <ConfirmDialog
+        isOpen={!!redeliveryConfirm}
+        onClose={() => setRedeliveryConfirm(null)}
+        onConfirm={handleRedelivery}
+        title="重新派送"
+        message={`确定要为订单 ${redeliveryConfirm?.orderNo} 安排重新派送吗？`}
+        type="warning"
+        confirmText="确认重新派送"
+        loading={isLoading}
+      />
     </div>
   );
 }

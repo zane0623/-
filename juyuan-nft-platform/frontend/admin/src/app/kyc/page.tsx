@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import AdminHeader from '@/components/layout/Header';
+import Modal from '@/components/ui/Modal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { ToastContainer, showToast } from '@/components/ui/Toast';
 import { 
   FileCheck, 
   User, 
@@ -44,64 +47,6 @@ interface KYCApplication {
   rejectReason?: string;
 }
 
-const applications: KYCApplication[] = [
-  {
-    id: '1',
-    user: { name: '张三', email: 'zhangsan@example.com', wallet: '0x1234...5678', avatar: '张' },
-    idType: '身份证',
-    idNumber: '310***********1234',
-    documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
-    status: 'pending',
-    riskLevel: 'low',
-    submittedAt: '2024-01-15 14:30'
-  },
-  {
-    id: '2',
-    user: { name: '李四', email: 'lisi@example.com', wallet: '0x2345...6789', avatar: '李' },
-    idType: '身份证',
-    idNumber: '110***********5678',
-    documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
-    status: 'reviewing',
-    riskLevel: 'medium',
-    submittedAt: '2024-01-15 12:00',
-    reviewer: '审核员A'
-  },
-  {
-    id: '3',
-    user: { name: '王五', email: 'wangwu@example.com', wallet: '0x3456...7890', avatar: '王' },
-    idType: '护照',
-    idNumber: 'E********90',
-    documents: { idFront: '/passport.jpg', idBack: '', selfie: '/selfie.jpg' },
-    status: 'approved',
-    riskLevel: 'low',
-    submittedAt: '2024-01-14 10:00',
-    reviewedAt: '2024-01-14 15:30',
-    reviewer: '审核员B'
-  },
-  {
-    id: '4',
-    user: { name: '赵六', email: 'zhaoliu@example.com', wallet: '0x4567...8901', avatar: '赵' },
-    idType: '身份证',
-    idNumber: '440***********9012',
-    documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
-    status: 'rejected',
-    riskLevel: 'high',
-    submittedAt: '2024-01-13 09:00',
-    reviewedAt: '2024-01-13 16:00',
-    reviewer: '审核员A',
-    rejectReason: '证件照片模糊，无法识别关键信息'
-  },
-  {
-    id: '5',
-    user: { name: '钱七', email: 'qianqi@example.com', wallet: '0x5678...9012', avatar: '钱' },
-    idType: '身份证',
-    idNumber: '320***********3456',
-    documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
-    status: 'pending',
-    riskLevel: 'low',
-    submittedAt: '2024-01-15 16:00'
-  },
-];
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
   pending: { label: '待审核', color: 'text-amber-700', bgColor: 'bg-amber-100', icon: Clock },
@@ -117,9 +62,158 @@ const riskConfig: Record<string, { label: string; color: string; bgColor: string
 };
 
 export default function KYCPage() {
+  const [applications, setApplications] = useState<KYCApplication[]>([
+    {
+      id: '1',
+      user: { name: '张三', email: 'zhangsan@example.com', wallet: '0x1234...5678', avatar: '张' },
+      idType: '身份证',
+      idNumber: '310***********1234',
+      documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
+      status: 'pending',
+      riskLevel: 'low',
+      submittedAt: '2024-01-15 14:30'
+    },
+    {
+      id: '2',
+      user: { name: '李四', email: 'lisi@example.com', wallet: '0x2345...6789', avatar: '李' },
+      idType: '身份证',
+      idNumber: '110***********5678',
+      documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
+      status: 'reviewing',
+      riskLevel: 'medium',
+      submittedAt: '2024-01-15 12:00',
+      reviewer: '审核员A'
+    },
+    {
+      id: '3',
+      user: { name: '王五', email: 'wangwu@example.com', wallet: '0x3456...7890', avatar: '王' },
+      idType: '护照',
+      idNumber: 'E********90',
+      documents: { idFront: '/passport.jpg', idBack: '', selfie: '/selfie.jpg' },
+      status: 'approved',
+      riskLevel: 'low',
+      submittedAt: '2024-01-14 10:00',
+      reviewedAt: '2024-01-14 15:30',
+      reviewer: '审核员B'
+    },
+    {
+      id: '4',
+      user: { name: '赵六', email: 'zhaoliu@example.com', wallet: '0x4567...8901', avatar: '赵' },
+      idType: '身份证',
+      idNumber: '440***********9012',
+      documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
+      status: 'rejected',
+      riskLevel: 'high',
+      submittedAt: '2024-01-13 09:00',
+      reviewedAt: '2024-01-13 16:00',
+      reviewer: '审核员A',
+      rejectReason: '证件照片模糊，无法识别关键信息'
+    },
+    {
+      id: '5',
+      user: { name: '钱七', email: 'qianqi@example.com', wallet: '0x5678...9012', avatar: '钱' },
+      idType: '身份证',
+      idNumber: '320***********3456',
+      documents: { idFront: '/id-front.jpg', idBack: '/id-back.jpg', selfie: '/selfie.jpg' },
+      status: 'pending',
+      riskLevel: 'low',
+      submittedAt: '2024-01-15 16:00'
+    },
+  ]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedApp, setSelectedApp] = useState<KYCApplication | null>(null);
+  const [approveApp, setApproveApp] = useState<KYCApplication | null>(null);
+  const [rejectApp, setRejectApp] = useState<KYCApplication | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 通过审核
+  const handleApprove = async (app: KYCApplication) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setApplications(prev => prev.map(a => 
+      a.id === app.id 
+        ? { 
+            ...a, 
+            status: 'approved' as const, 
+            reviewedAt: new Date().toLocaleString(),
+            reviewer: '当前管理员'
+          } 
+        : a
+    ));
+    
+    showToast.success('审核通过', `用户 ${app.user.name} 的KYC已通过`);
+    setApproveApp(null);
+    setSelectedApp(null);
+    setIsLoading(false);
+  };
+
+  // 拒绝审核
+  const handleReject = async () => {
+    if (!rejectApp) return;
+    if (!rejectReason.trim()) {
+      showToast.warning('请填写拒绝原因');
+      return;
+    }
+    
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setApplications(prev => prev.map(a => 
+      a.id === rejectApp.id 
+        ? { 
+            ...a, 
+            status: 'rejected' as const, 
+            reviewedAt: new Date().toLocaleString(),
+            reviewer: '当前管理员',
+            rejectReason
+          } 
+        : a
+    ));
+    
+    showToast.success('已拒绝', `用户 ${rejectApp.user.name} 的KYC已拒绝`);
+    setRejectApp(null);
+    setRejectReason('');
+    setSelectedApp(null);
+    setIsLoading(false);
+  };
+
+  // 导出报表
+  const handleExport = () => {
+    const csv = [
+      ['用户名', '邮箱', '证件类型', '状态', '风险等级', '提交时间', '审核时间'].join(','),
+      ...applications.map(a => [
+        a.user.name,
+        a.user.email,
+        a.idType,
+        statusConfig[a.status].label,
+        riskConfig[a.riskLevel].label,
+        a.submittedAt,
+        a.reviewedAt || '-'
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kyc_report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    showToast.success('导出成功', `已导出 ${applications.length} 条KYC记录`);
+  };
+
+  // 批量审核
+  const handleBatchReview = () => {
+    const pendingCount = applications.filter(a => a.status === 'pending').length;
+    if (pendingCount === 0) {
+      showToast.info('没有待审核的申请');
+      return;
+    }
+    showToast.info('批量审核', `共有 ${pendingCount} 条待审核申请`);
+  };
 
   const filteredApps = applications.filter(app => {
     if (selectedStatus !== 'all' && app.status !== selectedStatus) return false;
@@ -141,6 +235,7 @@ export default function KYCPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />
+        <ToastContainer />
         <main className="flex-1 overflow-auto p-6">
           {/* 页面标题 */}
           <div className="flex justify-between items-center mb-6">
@@ -149,11 +244,17 @@ export default function KYCPage() {
               <p className="text-gray-500 mt-1">审核用户实名认证申请</p>
             </div>
             <div className="flex gap-3">
-              <button className="btn-secondary btn-sm flex items-center gap-2">
+              <button 
+                onClick={handleExport}
+                className="btn-secondary btn-sm flex items-center gap-2"
+              >
                 <Download className="w-4 h-4" />
                 导出报表
               </button>
-              <button className="btn-primary btn-sm">
+              <button 
+                onClick={handleBatchReview}
+                className="btn-primary btn-sm"
+              >
                 批量审核
               </button>
             </div>
@@ -292,10 +393,16 @@ export default function KYCPage() {
                             </button>
                             {app.status === 'pending' && (
                               <>
-                                <button className="px-3 py-1.5 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 transition-colors">
+                                <button 
+                                  onClick={() => setApproveApp(app)}
+                                  className="px-3 py-1.5 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 transition-colors"
+                                >
                                   通过
                                 </button>
-                                <button className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+                                <button 
+                                  onClick={() => setRejectApp(app)}
+                                  className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                                >
                                   拒绝
                                 </button>
                               </>
@@ -431,11 +538,21 @@ export default function KYCPage() {
                   {/* Footer */}
                   {selectedApp.status === 'pending' && (
                     <div className="p-6 border-t border-gray-200 flex gap-4">
-                      <button className="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors">
+                      <button 
+                        onClick={() => {
+                          setRejectApp(selectedApp);
+                          setSelectedApp(null);
+                        }}
+                        className="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
+                      >
                         拒绝
                       </button>
-                      <button className="flex-1 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors">
-                        通过
+                      <button 
+                        onClick={() => handleApprove(selectedApp)}
+                        disabled={isLoading}
+                        className="flex-1 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                      >
+                        {isLoading ? '处理中...' : '通过'}
                       </button>
                     </div>
                   )}
@@ -445,6 +562,79 @@ export default function KYCPage() {
           )}
         </main>
       </div>
+
+      {/* 通过确认 */}
+      <ConfirmDialog
+        isOpen={!!approveApp}
+        onClose={() => setApproveApp(null)}
+        onConfirm={() => approveApp && handleApprove(approveApp)}
+        title="确认通过"
+        message={`确定要通过用户 ${approveApp?.user.name} 的KYC认证吗？`}
+        type="success"
+        confirmText="确认通过"
+        loading={isLoading}
+      />
+
+      {/* 拒绝弹窗 */}
+      <Modal
+        isOpen={!!rejectApp}
+        onClose={() => {
+          setRejectApp(null);
+          setRejectReason('');
+        }}
+        title="拒绝KYC申请"
+        size="md"
+      >
+        {rejectApp && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">
+                {rejectApp.user.avatar}
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">{rejectApp.user.name}</p>
+                <p className="text-sm text-gray-500">{rejectApp.user.email}</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">拒绝原因 *</label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="请输入拒绝原因，将通知给用户"
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none resize-none"
+              />
+            </div>
+
+            <div className="p-4 bg-amber-50 rounded-xl">
+              <p className="text-sm text-amber-700">
+                ⚠️ 拒绝后用户需要重新提交KYC申请
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => {
+                  setRejectApp(null);
+                  setRejectReason('');
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={isLoading || !rejectReason.trim()}
+                className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '处理中...' : '确认拒绝'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
