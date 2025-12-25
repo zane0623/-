@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   description: '基于区块链技术的农产品NFT平台，预购优质农产品，获得数字资产所有权',
   keywords: '农产品NFT,区块链,预售,溯源,数字资产',
   authors: [{ name: '钜园农业' }],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
   openGraph: {
     title: '钜园农业NFT平台',
     description: '基于区块链技术的农产品NFT平台',
