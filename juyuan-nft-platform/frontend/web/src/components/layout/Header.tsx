@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Menu, X, ShoppingCart, Leaf, Sparkles } from 'lucide-react';
+import { ThemeToggleSimple } from '@/components/ui/ThemeToggle';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,7 +72,10 @@ export function Header() {
           </div>
 
           {/* Right side */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            {/* 主题切换 */}
+            <ThemeToggleSimple />
+            
             {/* 购物车 */}
             <Link 
               href="/cart" 
@@ -147,17 +151,23 @@ export function Header() {
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            className="lg:hidden p-3 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-xl transition-all duration-300"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+          {/* Mobile right side */}
+          <div className="flex lg:hidden items-center gap-2">
+            {/* 主题切换 */}
+            <ThemeToggleSimple />
+            
+            {/* Mobile menu button */}
+            <button
+              className="p-3 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-xl transition-all duration-300"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
