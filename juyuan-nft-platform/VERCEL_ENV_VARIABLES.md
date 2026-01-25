@@ -20,7 +20,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://wntvfodzwuyfbqisjocs.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的Supabase_Anon_Key
 
 # API 地址（后端服务地址）
-NEXT_PUBLIC_API_URL=https://你的后端服务.railway.app
+NEXT_PUBLIC_API_URL=https://你的后端服务.onrender.com
 # 或本地开发: http://localhost:3001
 
 # WalletConnect 配置
@@ -48,8 +48,8 @@ NEXT_PUBLIC_RPC_URL=https://polygon-rpc.com
 - 填入 `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
 
 #### 3. 后端 API 地址
-- Railway 部署后获取的服务 URL
-- 例如：`https://user-service-production.up.railway.app`
+- Render 部署后获取的服务 URL
+- 例如：`https://user-service.onrender.com`
 - 填入 `NEXT_PUBLIC_API_URL`
 
 ---
@@ -64,7 +64,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://wntvfodzwuyfbqisjocs.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的Supabase_Anon_Key
 
 # API 地址
-NEXT_PUBLIC_API_URL=https://你的后端服务.railway.app
+NEXT_PUBLIC_API_URL=https://你的后端服务.onrender.com
 
 # 管理后台配置
 NEXT_PUBLIC_ADMIN_SECRET=你的管理密钥
