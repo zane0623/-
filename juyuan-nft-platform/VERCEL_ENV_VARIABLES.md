@@ -177,7 +177,7 @@ vercel env pull .env.local
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://wntvfodzwuyfbqisjocs.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的Supabase_Anon_Key
-NEXT_PUBLIC_API_URL=https://你的后端服务.railway.app
+NEXT_PUBLIC_API_URL=https://你的后端服务.onrender.com
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=你的WalletConnect_Project_ID
 NEXT_PUBLIC_APP_NAME=钜园农业NFT平台
 NEXT_PUBLIC_APP_URL=https://你的vercel域名.vercel.app
@@ -190,7 +190,7 @@ NEXT_PUBLIC_RPC_URL=https://polygon-rpc.com
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://wntvfodzwuyfbqisjocs.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的Supabase_Anon_Key
-NEXT_PUBLIC_API_URL=https://你的后端服务.railway.app
+NEXT_PUBLIC_API_URL=https://你的后端服务.onrender.com
 NEXT_PUBLIC_ADMIN_SECRET=你的管理密钥
 ```
 
