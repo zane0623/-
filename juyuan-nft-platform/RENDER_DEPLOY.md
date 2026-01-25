@@ -22,6 +22,16 @@ Render 是一个现代化的云平台，提供：
 
 ### 步骤 2：创建 Web Service
 
+**方法 1：使用 render.yaml（推荐，最简单）**
+
+1. 在 Render Dashboard，点击 **"New +"** → **"Blueprint"**
+2. 选择 **"Connect a repository"**
+3. 选择你的仓库：`zane0623/-`
+4. Render 会自动检测 `render.yaml` 文件
+5. 点击 **"Apply"** 创建所有服务
+
+**方法 2：手动创建单个服务**
+
 1. 在 Render Dashboard，点击 **"New +"** → **"Web Service"**
 2. 选择 **"Connect a repository"**
 3. 选择你的仓库：`zane0623/-`
@@ -31,13 +41,40 @@ Render 是一个现代化的云平台，提供：
 
 #### 基本设置
 
+在创建服务的表单中，你会看到以下字段：
+
 - **Name**: `user-service`（或你的服务名）
 - **Region**: 选择最近的区域（如 `Singapore`）
 - **Branch**: `main`
 - **Root Directory**: `backend/services/user` ⚠️ **重要！**
-- **Runtime**: `Node`
-- **Build Command**: `npm install && npm run build`
-- **Start Command**: `npm start`
+
+#### 构建和启动命令
+
+**如果界面中没有显示 Build Command 和 Start Command：**
+
+Render 会自动检测 Node.js 项目，但你可以通过以下方式配置：
+
+**方法 1：使用 render.yaml 配置文件（推荐）**
+
+在项目根目录创建 `render.yaml` 文件（见下方配置）
+
+**方法 2：在服务创建后设置**
+
+1. 创建服务后，进入服务页面
+2. 点击 **"Settings"** 标签
+3. 向下滚动找到 **"Build & Deploy"** 部分
+4. 在这里可以设置：
+   - **Build Command**: `cd backend/services/user && npm install && npm run build`
+   - **Start Command**: `cd backend/services/user && npm start`
+
+**方法 3：Render 自动检测**
+
+如果项目根目录有 `package.json`，Render 会自动：
+- 检测为 Node.js 项目
+- 使用 `npm install` 作为构建命令
+- 使用 `npm start` 作为启动命令
+
+但因为我们使用了 Root Directory，需要手动设置命令。
 
 #### 环境变量
 
@@ -67,9 +104,25 @@ REDIS_DB=0
 
 ### 步骤 4：部署
 
+**如果使用 render.yaml：**
+1. 点击 **"Apply"**
+2. Render 会自动创建所有服务并开始部署
+3. 等待部署完成（通常 3-5 分钟）
+
+**如果手动创建：**
 1. 点击 **"Create Web Service"**
 2. Render 会自动开始构建和部署
 3. 等待部署完成（通常 3-5 分钟）
+
+**如果找不到 Build Command 和 Start Command：**
+
+创建服务后，在服务设置中：
+1. 进入服务页面
+2. 点击 **"Settings"** 标签
+3. 找到 **"Build & Deploy"** 部分
+4. 设置：
+   - **Build Command**: `cd backend/services/user && npm install && npm run build`
+   - **Start Command**: `cd backend/services/user && npm start`
 
 ---
 

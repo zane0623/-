@@ -1,0 +1,159 @@
+# Render 部署配置文件
+# 文档: https://render.com/docs/yaml-spec
+
+services:
+  # 用户服务
+  - type: web
+    name: user-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/user && npm install && npm run build
+    startCommand: cd backend/services/user && npm start
+    rootDir: backend/services/user
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # 需要在 Render Dashboard 中手动设置
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+
+  # NFT 服务
+  - type: web
+    name: nft-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/nft && npm install && npm run build
+    startCommand: cd backend/services/nft && npm start
+    rootDir: backend/services/nft
+    envVars:
+      - key: PORT
+        value: 3002
+      - key: NODE_ENV
+        value: production
+
+  # 预售服务
+  - type: web
+    name: presale-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/presale && npm install && npm run build
+    startCommand: cd backend/services/presale && npm start
+    rootDir: backend/services/presale
+    envVars:
+      - key: PORT
+        value: 3003
+      - key: NODE_ENV
+        value: production
+
+  # 支付服务
+  - type: web
+    name: payment-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/payment && npm install && npm run build
+    startCommand: cd backend/services/payment && npm start
+    rootDir: backend/services/payment
+    envVars:
+      - key: PORT
+        value: 3004
+      - key: NODE_ENV
+        value: production
+
+  # 溯源服务
+  - type: web
+    name: traceability-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/traceability && npm install && npm run build
+    startCommand: cd backend/services/traceability && npm start
+    rootDir: backend/services/traceability
+    envVars:
+      - key: PORT
+        value: 3005
+      - key: NODE_ENV
+        value: production
+
+  # 物流服务
+  - type: web
+    name: logistics-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/logistics && npm install && npm run build
+    startCommand: cd backend/services/logistics && npm start
+    rootDir: backend/services/logistics
+    envVars:
+      - key: PORT
+        value: 3006
+      - key: NODE_ENV
+        value: production
+
+  # 合规服务
+  - type: web
+    name: compliance-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/compliance && npm install && npm run build
+    startCommand: cd backend/services/compliance && npm start
+    rootDir: backend/services/compliance
+    envVars:
+      - key: PORT
+        value: 3007
+      - key: NODE_ENV
+        value: production
+
+  # 通知服务
+  - type: web
+    name: notification-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/notification && npm install && npm run build
+    startCommand: cd backend/services/notification && npm start
+    rootDir: backend/services/notification
+    envVars:
+      - key: PORT
+        value: 3008
+      - key: NODE_ENV
+        value: production
+
+  # 国际化服务
+  - type: web
+    name: i18n-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/i18n && npm install && npm run build
+    startCommand: cd backend/services/i18n && npm start
+    rootDir: backend/services/i18n
+    envVars:
+      - key: PORT
+        value: 3009
+      - key: NODE_ENV
+        value: production
+
+  # 货币服务
+  - type: web
+    name: currency-service
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend/services/currency && npm install && npm run build
+    startCommand: cd backend/services/currency && npm start
+    rootDir: backend/services/currency
+    envVars:
+      - key: PORT
+        value: 3010
+      - key: NODE_ENV
+        value: production
