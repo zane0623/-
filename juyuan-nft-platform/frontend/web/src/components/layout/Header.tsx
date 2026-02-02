@@ -3,13 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Menu, X, ShoppingCart, Leaf, Sparkles } from 'lucide-react';
+import { ConnectButton, useAccount } from '@rainbow-me/rainbowkit';
+import { Menu, X, ShoppingCart, Leaf, Sparkles, Heart } from 'lucide-react';
 import { ThemeToggleSimple } from '@/components/ui/ThemeToggle';
+import { SearchBar } from '@/components/SearchBar';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { useWishlist } from '@/hooks/useWishlist';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { count: wishlistCount } = useWishlist();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +62,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -69,12 +73,30 @@ export function Header() {
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-teal-400 group-hover:w-full transition-all duration-300 rounded-full" />
               </Link>
             ))}
+            {/* 搜索框 */}
+            <SearchBar />
           </div>
 
           {/* Right side */}
           <div className="hidden lg:flex items-center gap-3">
             {/* 主题切换 */}
             <ThemeToggleSimple />
+            
+            {/* 通知中心 */}
+            <NotificationCenter />
+            
+            {/* 心愿单 */}
+            <Link 
+              href="/wishlist" 
+              className="relative p-3 text-slate-400 hover:text-white transition-colors duration-300 hover:bg-slate-800/50 rounded-xl group"
+            >
+              <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg shadow-emerald-500/50">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
             
             {/* 购物车 */}
             <Link 

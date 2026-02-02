@@ -5,9 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Modal } from '@/components/ui/Modal';
-import { ShoppingCart, Minus, Plus, Wallet, CreditCard, QrCode, CheckCircle, X, Clock, MapPin, Calendar, TrendingUp, Heart, Share2, Bell } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Wallet, CreditCard, QrCode, CheckCircle, X, Clock, MapPin, Calendar, TrendingUp, Heart, Share2, Bell, SlidersHorizontal } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+import { useWishlist } from '@/hooks/useWishlist';
+import { FilterPanel } from '@/components/FilterPanel';
 
 interface Presale {
   id: string;
@@ -34,8 +36,14 @@ export default function PresalePage() {
   const [presales, setPresales] = useState<Presale[]>([]);
   const [filter, setFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [notifications, setNotifications] = useState<Set<string>>(new Set());
+  
+  // 筛选和排序状态
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('popularity');
   
   // 购买弹窗状态
   const [selectedPresale, setSelectedPresale] = useState<Presale | null>(null);
@@ -132,17 +140,18 @@ export default function PresalePage() {
 
   // 收藏功能
   const handleFavorite = (presale: Presale) => {
-    setFavorites(prev => {
-      const next = new Set(prev);
-      if (next.has(presale.id)) {
-        next.delete(presale.id);
-        toast.info('已取消收藏');
-      } else {
-        next.add(presale.id);
-        toast.success('已收藏', presale.productType);
-      }
-      return next;
-    });
+    if (isInWishlist(presale.id)) {
+      removeFromWishlist(presale.id);
+      toast.info('已取消收藏');
+    } else {
+      addToWishlist({
+        id: presale.id,
+        productType: presale.productType,
+        price: presale.price,
+        image: presale.image,
+      });
+      toast.success('已收藏', presale.productType);
+    }
   };
 
   // 开售通知
@@ -303,13 +312,13 @@ export default function PresalePage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); handleFavorite(presale); }}
                       className={`p-3 rounded-xl transition-all ${
-                        favorites.has(presale.id)
+                        isInWishlist(presale.id)
                           ? 'bg-red-500 text-white'
                           : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                       }`}
                       title="收藏"
                     >
-                      <Heart className={`w-5 h-5 ${favorites.has(presale.id) ? 'fill-current' : ''}`} />
+                      <Heart className={`w-5 h-5 ${isInWishlist(presale.id) ? 'fill-current' : ''}`} />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleShare(presale); }}
@@ -715,6 +724,18 @@ export default function PresalePage() {
           </div>
         </div>
       )}
+
+      {/* 筛选面板 */}
+      <FilterPanel
+        isOpen={showFilterPanel}
+        onClose={() => setShowFilterPanel(false)}
+        priceRange={priceRange}
+        onPriceRangeChange={setPriceRange}
+        selectedType={selectedType}
+        onTypeChange={setSelectedType}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
     </div>
   );
 }
