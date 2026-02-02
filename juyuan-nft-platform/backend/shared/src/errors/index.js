@@ -71,6 +71,7 @@ exports.InternalError = InternalError;
 class UserNotFoundError extends NotFoundError {
     constructor() {
         super('用户');
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.USER_NOT_FOUND.code;
     }
 }
@@ -78,6 +79,7 @@ exports.UserNotFoundError = UserNotFoundError;
 class PresaleNotFoundError extends NotFoundError {
     constructor() {
         super('预售');
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.PRESALE_NOT_FOUND.code;
     }
 }
@@ -85,6 +87,7 @@ exports.PresaleNotFoundError = PresaleNotFoundError;
 class NFTNotFoundError extends NotFoundError {
     constructor() {
         super('NFT');
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.NFT_NOT_FOUND.code;
     }
 }
@@ -92,6 +95,7 @@ exports.NFTNotFoundError = NFTNotFoundError;
 class PresaleNotStartedError extends BadRequestError {
     constructor() {
         super(constants_1.ERROR_CODES.PRESALE_NOT_STARTED.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.PRESALE_NOT_STARTED.code;
     }
 }
@@ -99,6 +103,7 @@ exports.PresaleNotStartedError = PresaleNotStartedError;
 class PresaleEndedError extends BadRequestError {
     constructor() {
         super(constants_1.ERROR_CODES.PRESALE_ENDED.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.PRESALE_ENDED.code;
     }
 }
@@ -106,6 +111,7 @@ exports.PresaleEndedError = PresaleEndedError;
 class PresaleSoldOutError extends BadRequestError {
     constructor() {
         super(constants_1.ERROR_CODES.PRESALE_SOLD_OUT.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.PRESALE_SOLD_OUT.code;
     }
 }
@@ -113,6 +119,7 @@ exports.PresaleSoldOutError = PresaleSoldOutError;
 class InsufficientBalanceError extends BadRequestError {
     constructor() {
         super(constants_1.ERROR_CODES.INSUFFICIENT_BALANCE.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.INSUFFICIENT_BALANCE.code;
     }
 }
@@ -120,6 +127,7 @@ exports.InsufficientBalanceError = InsufficientBalanceError;
 class InvalidSignatureError extends UnauthorizedError {
     constructor() {
         super(constants_1.ERROR_CODES.INVALID_SIGNATURE.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.INVALID_SIGNATURE.code;
     }
 }
@@ -127,6 +135,7 @@ exports.InvalidSignatureError = InvalidSignatureError;
 class KYCRequiredError extends ForbiddenError {
     constructor() {
         super(constants_1.ERROR_CODES.KYC_REQUIRED.message);
+        // @ts-ignore - readonly property assignment in constructor
         this.code = constants_1.ERROR_CODES.KYC_REQUIRED.code;
     }
 }
