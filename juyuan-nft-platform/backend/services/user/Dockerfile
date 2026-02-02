@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# 安装依赖
-RUN npm ci --only=production
+# 安装依赖（包括devDependencies，因为需要构建TypeScript）
+RUN npm ci
 
 # 复制源代码
 COPY . .
