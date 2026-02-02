@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { rateLimiters } from '../../../../shared/src/middleware/rateLimit';
+import { setupSwagger } from './swagger';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import kycRoutes from './routes/kyc';
