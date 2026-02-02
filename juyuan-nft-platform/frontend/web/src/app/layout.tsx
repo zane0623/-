@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google';
 import { Providers } from './providers';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './globals.css';
 
 const inter = Inter({ 
@@ -66,15 +67,17 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={inter.className}>
-        <Providers>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

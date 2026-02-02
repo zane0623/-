@@ -1,0 +1,47 @@
+{
+  "name": "钜园农业NFT平台",
+  "short_name": "钜园NFT",
+  "description": "基于区块链技术的农产品NFT平台，预购优质农产品，获得数字资产所有权",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["finance", "shopping"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "预售市场",
+      "short_name": "预售",
+      "description": "浏览和购买农产品NFT",
+      "url": "/presale",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "我的NFT",
+      "short_name": "NFT",
+      "description": "查看我的NFT收藏",
+      "url": "/my-nfts",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

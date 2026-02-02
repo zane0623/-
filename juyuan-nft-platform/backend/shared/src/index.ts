@@ -13,5 +13,8 @@ export * from './utils/crypto';
 export * from './utils/date';
 export * from './utils/pagination';
 
+// 导出中间件
+export * from './middleware/rateLimit';
+
 
 

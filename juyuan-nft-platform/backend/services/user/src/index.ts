@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import { rateLimiters } from '../../../../shared/src/middleware/rateLimit';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import kycRoutes from './routes/kyc';
@@ -24,6 +25,9 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 速率限制（应用到所有路由）
+app.use(rateLimiters.standard);
+
 // 健康检查
 app.get('/health', (req: Request, res: Response) => {
   res.json({
@@ -32,6 +36,11 @@ app.get('/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Swagger API 文档（仅在非生产环境）
+if (process.env.NODE_ENV !== 'production') {
+  setupSwagger(app);
+}
 
 // API路由
 app.use('/api/v1/auth', authRoutes);

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from 'express-validator';
 import { verifySignature } from '../../../../shared/src/blockchain';
+import { rateLimiters } from '../../../../shared/src/middleware/rateLimit';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -19,6 +20,7 @@ const JWT_EXPIRES_IN = 604800;
  */
 router.post(
   '/register',
+  rateLimiters.strict, // 注册接口使用严格限制
   [
     body('email').isEmail().withMessage('Invalid email'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),

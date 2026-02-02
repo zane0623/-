@@ -1,0 +1,18 @@
+# 钜园农业NFT平台 - robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /my-nfts
+
+# 允许搜索引擎索引主要页面
+Allow: /
+Allow: /presale
+
+# Sitemap位置
+Sitemap: https://juyuan-nft.com/sitemap.xml
+
+# 爬取延迟（可选）
+Crawl-delay: 1
