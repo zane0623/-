@@ -126,13 +126,38 @@ export default function PresalePage() {
       }
     ];
 
-    const filtered = filter === 'ALL'
+    let filtered = filter === 'ALL'
       ? mockData
       : mockData.filter(p => p.status === filter);
 
+    // 应用价格筛选
+    if (priceRange[0] > 0 || priceRange[1] < 10000) {
+      filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    }
+
+    // 应用类型筛选
+    if (selectedType) {
+      filtered = filtered.filter(p => p.productType.includes(selectedType));
+    }
+
+    // 应用排序
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-desc':
+          return b.price - a.price;
+        case 'date':
+          return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+        case 'popularity':
+        default:
+          return (b.currentSupply / b.maxSupply) - (a.currentSupply / a.maxSupply);
+      }
+    });
+
     setPresales(filtered);
     setLoading(false);
-  }, [filter]);
+  }, [filter, priceRange, selectedType, sortBy]);
 
   useEffect(() => {
     loadPresales();
