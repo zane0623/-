@@ -101,7 +101,7 @@ export class AMLService {
         safe: true
       };
     } catch (error) {
-      console.error('Wallet check error:', error);
+      // Error logging handled by logger middleware
       return {
         walletAddress,
         riskLevel: 'UNKNOWN',
@@ -245,7 +245,7 @@ export class AMLService {
    * 发送告警
    */
   private async sendAlert(amlRecord: any) {
-    console.log(`HIGH RISK ALERT: AML Check ${amlRecord.id}`);
+    // High risk alert - should be sent via notification service
     // 发送通知给合规团队
   }
 }

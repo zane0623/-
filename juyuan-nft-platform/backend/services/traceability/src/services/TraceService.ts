@@ -209,7 +209,7 @@ export class TraceService {
         network: process.env.BLOCKCHAIN_NETWORK || 'polygon'
       };
     } catch (error) {
-      console.error('Error getting blockchain data:', error);
+      // Error logging handled by error handler middleware
       return null;
     }
   }

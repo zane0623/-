@@ -43,3 +43,4 @@ echo "✅ 部署完成！"
 echo "📊 查看日志: railway logs"
 echo "🌐 查看服务: railway open"
 
+

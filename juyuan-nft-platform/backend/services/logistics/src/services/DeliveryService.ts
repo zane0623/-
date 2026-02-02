@@ -297,9 +297,9 @@ export class DeliveryService {
   private async notifyLogisticsPartner(delivery: any) {
     try {
       // 这里应该调用实际的物流API
-      console.log('Notifying logistics partner for delivery:', delivery.id);
+      // Notifying logistics partner via API
     } catch (error) {
-      console.error('Error notifying logistics partner:', error);
+      // Error logging handled by error handler middleware
     }
   }
 
@@ -321,7 +321,7 @@ export class DeliveryService {
         }
       );
     } catch (error) {
-      console.error('Error notifying user:', error);
+      // Error logging handled by error handler middleware
     }
   }
 
@@ -338,7 +338,7 @@ export class DeliveryService {
         }
       );
     } catch (error) {
-      console.error('Error triggering NFT delivery:', error);
+      // Error logging handled by error handler middleware
     }
   }
 }

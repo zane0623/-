@@ -198,7 +198,7 @@ export class NotificationService {
 
     // 调用短信服务API（如阿里云、腾讯云）
     // 这里是示例实现
-    console.log(`Sending SMS to ${user.phone}: ${content}`);
+    // SMS sending via external service API
   }
 
   /**
@@ -216,7 +216,7 @@ export class NotificationService {
 
     // 使用Firebase Cloud Messaging发送推送
     // 这里是示例实现
-    console.log(`Sending push to ${userId}: ${title}`);
+    // Push notification via FCM
   }
 }
 

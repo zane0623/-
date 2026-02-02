@@ -291,3 +291,4 @@ export async function getTraceEvents(nftId?: string, productId?: string) {
   return data as TraceEvent[];
 }
 
+

@@ -7,7 +7,7 @@ import winston from 'winston';
 const { combine, timestamp, printf, colorize, json } = winston.format;
 
 // 自定义日志格式
-const customFormat = printf(({ level, message, timestamp, service, ...metadata }) => {
+const customFormat = printf(({ level, message, timestamp, service, ...metadata }: any) => {
   let msg = `${timestamp} [${service || 'app'}] ${level}: ${message}`;
   if (Object.keys(metadata).length > 0) {
     msg += ` ${JSON.stringify(metadata)}`;

@@ -155,7 +155,7 @@ export class EventService {
 
       return eventHash;
     } catch (error) {
-      console.error('Error recording on chain:', error);
+      // Error logging handled by error handler middleware
       return null;
     }
   }

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from 'express-validator';
+import { verifySignature } from '../../../../shared/src/blockchain';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -184,11 +185,14 @@ router.post('/wallet-login', async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: 验证签名
-    // const isValid = verifySignature(walletAddress, signature, message);
-    // if (!isValid) {
-    //   return res.status(401).json({ error: 'Invalid signature' });
-    // }
+    // 验证钱包签名
+    const isValid = await verifySignature(message, signature, walletAddress);
+    if (!isValid) {
+      return res.status(401).json({
+        error: 'Invalid signature',
+        message: 'Signature does not match wallet address',
+      });
+    }
 
     // 查找或创建用户
     let user = await prisma.user.findUnique({
