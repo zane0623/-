@@ -142,6 +142,12 @@ export function Header() {
 
                         return (
                           <div className="flex items-center gap-2">
+                            <Link
+                              href="/profile"
+                              className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
+                            >
+                              个人中心
+                            </Link>
                             <button
                               onClick={openChainModal}
                               className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
