@@ -7,8 +7,6 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { User, Mail, Wallet, Calendar, Edit2, Shield, Bell, Settings } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { useAuth } from '@/context/AuthContext';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { useAuth } from '@/context/AuthContext';
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
