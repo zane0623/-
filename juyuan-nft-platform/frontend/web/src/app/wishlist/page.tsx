@@ -24,7 +24,10 @@ export default function WishlistPage() {
       name: item.productType,
       price: item.price,
       quantity: 1,
-      image: item.image,
+      image: item.image || '',
+      icon: item.productType.includes('葡萄') ? '🍇' : item.productType.includes('橙') ? '🍊' : item.productType.includes('富士') ? '🍎' : '🌾',
+      origin: '未知产地',
+      maxQuantity: 10,
     });
     toast.success('已加入购物车', item.productType);
   };
