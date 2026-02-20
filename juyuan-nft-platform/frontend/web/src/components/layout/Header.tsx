@@ -87,31 +87,45 @@ export function Header() {
             <ThemeToggleSimple />
             
             {/* 通知中心 */}
-            <NotificationCenter />
+            {isAuthenticated && <NotificationCenter />}
             
             {/* 心愿单 */}
-            <Link 
-              href="/wishlist" 
-              className="relative p-3 text-slate-400 hover:text-white transition-colors duration-300 hover:bg-slate-800/50 rounded-xl group"
-            >
-              <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg shadow-emerald-500/50">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
+            {isAuthenticated && (
+              <Link 
+                href="/wishlist" 
+                className="relative p-3 text-slate-400 hover:text-white transition-colors duration-300 hover:bg-slate-800/50 rounded-xl group"
+              >
+                <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg shadow-emerald-500/50">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+            )}
             
             {/* 购物车 */}
-            <Link 
-              href="/cart" 
-              className="relative p-3 text-slate-400 hover:text-white transition-colors duration-300 hover:bg-slate-800/50 rounded-xl group"
-            >
-              <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg shadow-emerald-500/50">
-                0
-              </span>
-            </Link>
+            {isAuthenticated && (
+              <Link 
+                href="/cart" 
+                className="relative p-3 text-slate-400 hover:text-white transition-colors duration-300 hover:bg-slate-800/50 rounded-xl group"
+              >
+                <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 shadow-lg shadow-emerald-500/50">
+                  0
+                </span>
+              </Link>
+            )}
+            
+            {/* 登录按钮 - 未登录时显示 */}
+            {!isAuthenticated && (
+              <Link
+                href="/login"
+                className="px-6 py-3 bg-slate-800/50 border border-slate-700 text-white font-semibold rounded-xl hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all duration-300"
+              >
+                登录
+              </Link>
+            )}
             
             {/* 连接钱包按钮 */}
             <div className="relative">
@@ -135,22 +149,12 @@ export function Header() {
                       {(() => {
                         if (!connected) {
                           return (
-                            <div className="flex items-center gap-2">
-                              {!isAuthenticated && (
-                                <Link
-                                  href="/login"
-                                  className="px-6 py-3 bg-slate-800/50 border border-slate-700 text-white font-semibold rounded-xl hover:border-emerald-500/50 transition-all duration-300"
-                                >
-                                  登录
-                                </Link>
-                              )}
-                              <button
-                                onClick={openConnectModal}
-                                className="relative px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
-                              >
-                                连接钱包
-                              </button>
-                            </div>
+                            <button
+                              onClick={openConnectModal}
+                              className="relative px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+                            >
+                              连接钱包
+                            </button>
                           );
                         }
 
@@ -242,8 +246,19 @@ export function Header() {
                 {item.name}
               </Link>
             ))}
-            <div className="pt-4 px-4">
-              <ConnectButton />
+            <div className="pt-4 px-4 space-y-3">
+              {!isAuthenticated && (
+                <Link
+                  href="/login"
+                  className="block w-full px-4 py-3 text-center bg-slate-800/50 border border-slate-700 text-white font-semibold rounded-xl hover:border-emerald-500/50 transition-all duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  登录
+                </Link>
+              )}
+              <div>
+                <ConnectButton />
+              </div>
             </div>
           </div>
         </div>
