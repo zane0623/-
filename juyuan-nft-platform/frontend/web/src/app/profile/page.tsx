@@ -3,22 +3,44 @@
 import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { User, Mail, Wallet, Calendar, Edit2, Shield, Bell, Settings } from 'lucide-react';
 import { useAccount } from 'wagmi';
+import { useAuth } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'security'>('profile');
 
-  // 模拟用户数据
+  // 使用实际用户数据
   const userData = {
-    username: '用户_' + (address?.slice(0, 6) || '未连接'),
-    email: 'user@example.com',
-    walletAddress: address || '未连接钱包',
+    username: user?.username || '用户_' + (address?.slice(0, 6) || '未连接'),
+    email: user?.email || 'user@example.com',
+    walletAddress: user?.walletAddress || address || '未连接钱包',
     joinDate: '2024-01-15',
     nftCount: 5,
     orderCount: 12,
   };
+
+  return (
+    <ProtectedRoute>
+      <ProfileContent userData={userData} activeTab={activeTab} setActiveTab={setActiveTab} />
+    </ProtectedRoute>
+  );
+}
+
+function ProfileContent({ 
+  userData, 
+  activeTab, 
+  setActiveTab 
+}: { 
+  userData: any; 
+  activeTab: 'profile' | 'settings' | 'security'; 
+  setActiveTab: (tab: 'profile' | 'settings' | 'security') => void;
+}) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">

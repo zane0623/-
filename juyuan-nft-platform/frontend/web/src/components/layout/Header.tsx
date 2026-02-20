@@ -4,16 +4,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ConnectButton, useAccount } from '@rainbow-me/rainbowkit';
-import { Menu, X, ShoppingCart, Leaf, Sparkles, Heart } from 'lucide-react';
+import { Menu, X, ShoppingCart, Leaf, Sparkles, Heart, LogOut } from 'lucide-react';
 import { ThemeToggleSimple } from '@/components/ui/ThemeToggle';
 import { SearchBar } from '@/components/SearchBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { count: wishlistCount } = useWishlist();
+  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,23 +135,47 @@ export function Header() {
                       {(() => {
                         if (!connected) {
                           return (
-                            <button
-                              onClick={openConnectModal}
-                              className="relative px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
-                            >
-                              连接钱包
-                            </button>
+                            <div className="flex items-center gap-2">
+                              {!isAuthenticated && (
+                                <Link
+                                  href="/login"
+                                  className="px-6 py-3 bg-slate-800/50 border border-slate-700 text-white font-semibold rounded-xl hover:border-emerald-500/50 transition-all duration-300"
+                                >
+                                  登录
+                                </Link>
+                              )}
+                              <button
+                                onClick={openConnectModal}
+                                className="relative px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+                              >
+                                连接钱包
+                              </button>
+                            </div>
                           );
                         }
 
                         return (
                           <div className="flex items-center gap-2">
-                            <Link
-                              href="/profile"
-                              className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
-                            >
-                              个人中心
-                            </Link>
+                            {isAuthenticated && (
+                              <>
+                                <Link
+                                  href="/profile"
+                                  className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
+                                >
+                                  {user?.username || '个人中心'}
+                                </Link>
+                                <button
+                                  onClick={async () => {
+                                    await logout();
+                                    router.push('/');
+                                  }}
+                                  className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-red-500/50 hover:text-red-400 transition-all duration-300 flex items-center gap-2"
+                                  title="登出"
+                                >
+                                  <LogOut className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                             <button
                               onClick={openChainModal}
                               className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all duration-300"
