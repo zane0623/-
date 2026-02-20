@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Modal } from '@/components/ui/Modal';
-import { useAccount, useConnect } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useToast } from '@/context/ToastContext';
 import { 
   Package, 
@@ -41,7 +42,6 @@ interface NFT {
 export default function MyNFTsPage() {
   const router = useRouter();
   const { isConnected, address } = useAccount();
-  const { connectors, connect } = useConnect();
   const toast = useToast();
   const [filter, setFilter] = useState<string>('ALL');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -225,16 +225,51 @@ export default function MyNFTsPage() {
             <p className="text-slate-400 mb-8">
               请先连接您的Web3钱包以查看和管理您的农产品NFT
             </p>
-            <div className="space-y-3">
-              {connectors.map((connector) => (
-                <button
-                  key={connector.uid}
-                  onClick={() => connect({ connector })}
-                  className="w-full px-8 py-4 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30"
-                >
-                  使用 {connector.name} 连接
-                </button>
-              ))}
+            <div className="flex justify-center">
+              <ConnectButton.Custom>
+                {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
+                  const ready = mounted;
+                  const connected = ready && account && chain;
+
+                  return (
+                    <div
+                      {...(!ready && {
+                        'aria-hidden': true,
+                        style: {
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          userSelect: 'none',
+                        },
+                      })}
+                    >
+                      {(() => {
+                        if (!connected) {
+                          return (
+                            <button
+                              onClick={openConnectModal}
+                              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+                            >
+                              连接钱包
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <div className="text-center">
+                            <p className="text-slate-400 mb-4">钱包已连接</p>
+                            <button
+                              onClick={openAccountModal}
+                              className="px-6 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors"
+                            >
+                              {account.displayName}
+                            </button>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                }}
+              </ConnectButton.Custom>
             </div>
           </div>
         </main>
