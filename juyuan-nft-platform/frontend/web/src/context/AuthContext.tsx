@@ -108,7 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const message = `请签名以登录钜园农业NFT平台\n\n钱包地址: ${address}\n时间戳: ${Date.now()}`;
 
       // 请求用户签名
-      const signature = await signMessageAsync({ message });
+      const signature = await signMessageAsync({ 
+        account: address as `0x${string}`,
+        message: message as any,
+      });
 
       // 调用后端API
       const response = await authApi.walletLogin(address, signature, message);
@@ -116,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       saveAuth(response.token, response.user);
       toast.success('钱包登录成功', `欢迎，${response.user.username}`);
     } catch (error: any) {
-      if (error.message?.includes('User rejected')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('rejected')) {
         toast.error('签名被拒绝', '请确认签名以完成登录');
       } else {
         const message = error.response?.data?.message || '钱包登录失败';
