@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ConnectButton, useAccount } from '@rainbow-me/rainbowkit';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 import { Menu, X, ShoppingCart, Leaf, Sparkles, Heart, LogOut } from 'lucide-react';
 import { ThemeToggleSimple } from '@/components/ui/ThemeToggle';
 import { SearchBar } from '@/components/SearchBar';
