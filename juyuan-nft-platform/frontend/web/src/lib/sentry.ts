@@ -1,6 +1,9 @@
 // Sentry 错误监控配置
 // 可选：安装 @sentry/nextjs 以启用错误监控
 // npm install @sentry/nextjs
+//
+// 注意：此文件不会自动执行，需要手动调用 initSentry()
+// 如果不需要 Sentry，可以删除此文件
 
 export function initSentry() {
   // 只在有 DSN 时才尝试初始化
@@ -42,7 +45,5 @@ export function initSentry() {
   });
 }
 
-// 在应用启动时调用（仅在客户端）
-if (typeof window !== 'undefined') {
-  initSentry();
-}
+// 注意：不再自动执行，避免构建时检查
+// 如果需要启用 Sentry，请在需要的地方手动调用 initSentry()
