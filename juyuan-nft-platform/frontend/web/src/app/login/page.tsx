@@ -9,6 +9,9 @@ import { useAccount } from 'wagmi';
 import { Mail, Lock, User, Wallet, Loader2 } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
+// Force dynamic rendering to avoid ToastProvider issues during static generation
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, register, walletLogin, isAuthenticated } = useAuth();

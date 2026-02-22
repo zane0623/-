@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering to avoid ToastProvider issues during static generation
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';

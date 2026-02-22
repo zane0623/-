@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering to avoid ToastProvider issues during static generation
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';

@@ -19,6 +19,9 @@ import {
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 
+// Force dynamic rendering to avoid ToastProvider issues during static generation
+export const dynamic = 'force-dynamic';
+
 export default function CartPage() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, clearCart, totalPrice, totalItems } = useCart();

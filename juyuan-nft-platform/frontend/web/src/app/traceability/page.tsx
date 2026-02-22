@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering to avoid ToastProvider issues during static generation
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, QrCode, Shield, Clock, MapPin, Leaf, CheckCircle2 } from 'lucide-react';
