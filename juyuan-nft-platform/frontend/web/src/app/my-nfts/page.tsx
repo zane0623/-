@@ -226,9 +226,9 @@ export default function MyNFTsPage() {
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">连接钱包查看您的NFT</h2>
             <p className="text-slate-400 mb-8">
-              请先连接您的Web3钱包以查看和管理您的农产品NFT
+              请先连接您的Web3钱包或登录账户以查看和管理您的农产品NFT
             </p>
-            <div className="flex justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <ConnectButton.Custom>
                 {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
                   const ready = mounted;
@@ -273,6 +273,12 @@ export default function MyNFTsPage() {
                   );
                 }}
               </ConnectButton.Custom>
+              <button
+                onClick={() => router.push('/login')}
+                className="px-8 py-4 bg-slate-800/50 border border-slate-700 text-white font-semibold rounded-xl hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all duration-300"
+              >
+                登录账户
+              </button>
             </div>
           </div>
         </main>
