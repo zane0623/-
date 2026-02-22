@@ -18,30 +18,32 @@ export function initSentry() {
 
   // 使用动态导入，如果包未安装则静默失败
   // 注意：这会在运行时检查，不会在构建时失败
-  // 使用 eval 来避免 TypeScript 在构建时检查模块
+  // 使用字符串形式的 import 来避免 TypeScript 在构建时检查模块
   try {
     // @ts-ignore - 动态导入，包可能未安装
-    const loadSentry = () => import('@sentry/nextjs');
+    const importSentry = new Function('return import("@sentry/nextjs")');
     
-    loadSentry()
+    importSentry()
       .then((Sentry: any) => {
-        Sentry.init({
-          dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-          environment: process.env.NODE_ENV || 'development',
-          tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-          debug: process.env.NODE_ENV === 'development',
-          beforeSend(event: any) {
-            // 在生产环境中过滤敏感信息
-            if (process.env.NODE_ENV === 'production') {
-              // 移除敏感数据
-              if (event.request) {
-                delete event.request.cookies;
-                delete event.request.headers?.['authorization'];
+        if (Sentry && Sentry.init) {
+          Sentry.init({
+            dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+            environment: process.env.NODE_ENV || 'development',
+            tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+            debug: process.env.NODE_ENV === 'development',
+            beforeSend(event: any) {
+              // 在生产环境中过滤敏感信息
+              if (process.env.NODE_ENV === 'production') {
+                // 移除敏感数据
+                if (event.request) {
+                  delete event.request.cookies;
+                  delete event.request.headers?.['authorization'];
+                }
               }
-            }
-            return event;
-          },
-        });
+              return event;
+            },
+          });
+        }
       })
       .catch(() => {
         // Sentry 包未安装，静默跳过
