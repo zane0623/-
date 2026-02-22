@@ -14,8 +14,10 @@ export function initSentry() {
   }
 
   // 使用动态导入，如果包未安装则静默失败
-  import('@sentry/nextjs')
-    .then((Sentry) => {
+  // 注意：这会在运行时检查，不会在构建时失败
+  Promise.resolve().then(async () => {
+    try {
+      const Sentry = await import('@sentry/nextjs');
       Sentry.init({
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
         environment: process.env.NODE_ENV || 'development',
@@ -33,11 +35,11 @@ export function initSentry() {
           return event;
         },
       });
-    })
-    .catch(() => {
+    } catch (error) {
       // Sentry 包未安装，静默跳过
       // 这是正常的，Sentry 是可选的
-    });
+    }
+  });
 }
 
 // 在应用启动时调用（仅在客户端）
