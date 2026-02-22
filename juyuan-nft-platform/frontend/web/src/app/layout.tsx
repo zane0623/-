@@ -20,6 +20,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://juyuan-nft-web.vercel.app'),
   title: '钜园农业NFT平台 - 优质农产品数字化',
   description: '基于区块链技术的农产品NFT平台，预购优质农产品，获得数字资产所有权',
   keywords: '农产品NFT,区块链,预售,溯源,数字资产',
@@ -34,6 +35,12 @@ export const metadata: Metadata = {
     title: '钜园农业NFT平台',
     description: '基于区块链技术的农产品NFT平台',
     type: 'website',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://juyuan-nft-web.vercel.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '钜园农业NFT平台',
+    description: '基于区块链技术的农产品NFT平台',
   },
 };
 
