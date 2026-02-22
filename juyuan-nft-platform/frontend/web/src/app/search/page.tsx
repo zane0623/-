@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -162,9 +163,16 @@ export default function SearchPage() {
                   key={product.id}
                   className="bg-white/5 hover:bg-white/10 rounded-xl p-6 border border-white/10 hover:border-emerald-500/50 transition-all cursor-pointer"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-lg mb-4 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                     {product.image ? (
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                      <Image 
+                        src={product.image} 
+                        alt={product.name} 
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover rounded-lg"
+                        unoptimized
+                      />
                     ) : (
                       <span className="text-4xl">🌾</span>
                     )}

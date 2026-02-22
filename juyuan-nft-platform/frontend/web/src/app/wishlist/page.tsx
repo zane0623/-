@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -87,9 +88,16 @@ export default function WishlistPage() {
                   key={item.id}
                   className="bg-white/5 hover:bg-white/10 rounded-xl p-6 border border-white/10 hover:border-emerald-500/50 transition-all"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-lg mb-4 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                     {item.image ? (
-                      <img src={item.image} alt={item.productType} className="w-full h-full object-cover rounded-lg" />
+                      <Image 
+                        src={item.image} 
+                        alt={item.productType} 
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover rounded-lg"
+                        unoptimized
+                      />
                     ) : (
                       <span className="text-4xl">🌾</span>
                     )}
