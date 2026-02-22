@@ -27,10 +27,39 @@ Next.js 14 在构建时会尝试静态生成页面，即使这些页面标记为
 
 ## 解决方案
 
+采用了两种方法来解决这个问题：
+
+### 方案 1：修改 `useToast` Hook（主要方案）
+
+修改 `frontend/web/src/context/ToastContext.tsx` 中的 `useToast` hook，使其在静态生成时返回 no-op 函数而不是抛出错误。这样页面可以在构建时成功渲染，但在运行时仍需要 `ToastProvider`。
+
+```typescript
+export function useToast() {
+  const context = useContext(ToastContext);
+  // 在静态生成时，如果 context 不可用，返回 no-op 函数而不是抛出错误
+  if (context === undefined) {
+    // 检查是否在服务器端渲染（静态生成）
+    if (typeof window === 'undefined') {
+      return noOpToast; // 返回安全的 no-op 函数
+    }
+    // 在客户端运行时，如果仍然没有 context，则抛出错误
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+  return context;
+}
+```
+
+### 方案 2：添加动态渲染配置（辅助方案）
+
 为所有使用 `useToast` 的页面添加 `export const dynamic = 'force-dynamic'` 配置，强制这些页面进行动态渲染，而不是静态生成。
 
 ### 修改的文件
 
+**核心修复：**
+- `frontend/web/src/context/ToastContext.tsx` - 修改 `useToast` hook 以支持静态生成
+- `frontend/web/src/app/not-found.tsx` - 创建自定义 404 页面
+
+**辅助修复（添加动态渲染配置）：**
 1. `frontend/web/src/app/page.tsx` - 首页（使用 `FeaturedProducts` 组件，该组件使用 `useToast`）
 2. `frontend/web/src/app/cart/page.tsx`
 3. `frontend/web/src/app/help/page.tsx`
@@ -74,9 +103,18 @@ import { ... } from '...';
 
 ```
 fix: 添加动态渲染配置以修复ToastProvider静态生成错误
+fix: 修改useToast hook以支持静态生成，并创建not-found页面
 ```
 
 ## 状态
 
 ✅ 已修复并推送到 GitHub
 🔄 Vercel 将自动触发新的构建
+
+## 最终解决方案说明
+
+通过修改 `useToast` hook 使其在静态生成时返回 no-op 函数，我们解决了根本问题。这样：
+- ✅ 页面可以在构建时成功渲染（静态生成）
+- ✅ 在运行时，如果 `ToastProvider` 可用，Toast 功能正常工作
+- ✅ 在运行时，如果 `ToastProvider` 不可用，仍然会抛出错误（这是期望的行为）
+- ✅ 不需要为每个页面单独配置动态渲染（虽然我们保留了这些配置作为额外保障）
