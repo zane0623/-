@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react';
-import { Toast as ToastType } from '@/hooks/useToast';
+import { Toast as ToastType } from '@/context/ToastContext';
 
 interface ToastProps {
   toast: ToastType;
