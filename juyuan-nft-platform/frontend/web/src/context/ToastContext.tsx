@@ -58,9 +58,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// 创建一个安全的 fallback
+const noOpToast = {
+  success: () => {},
+  error: () => {},
+  info: () => {},
+  warning: () => {},
+};
+
 export function useToast() {
   const context = useContext(ToastContext);
+  // 在静态生成时，如果 context 不可用，返回 no-op 函数而不是抛出错误
+  // 这允许页面在构建时成功渲染，但在运行时仍需要 ToastProvider
   if (context === undefined) {
+    // 检查是否在服务器端渲染（静态生成）
+    if (typeof window === 'undefined') {
+      return noOpToast;
+    }
+    // 在客户端运行时，如果仍然没有 context，则抛出错误
     throw new Error('useToast must be used within a ToastProvider');
   }
   return context;
